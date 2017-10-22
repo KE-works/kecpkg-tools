@@ -1,6 +1,8 @@
 -e .
+click
 
 
 # testing
 tox
 hatch
+
