@@ -38,6 +38,7 @@ def get_settings_filepath(package_dir=None):
     else:
         return SETTINGS_FILE
 
+
 def save_settings(settings, package_dir=None):
     """
     Saving settings in path (either global, otherwise in the package)

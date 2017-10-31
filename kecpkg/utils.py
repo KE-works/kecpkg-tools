@@ -5,7 +5,6 @@ import sys
 from urllib.request import urlopen
 
 from kecpkg.commands.utils import echo_warning, echo_failure, echo_info
-from kecpkg.settings import load_settings, SETTINGS_FILENAME
 
 
 def ensure_dir_exists(d):
@@ -65,6 +64,7 @@ def get_package_dir(package_name=None):
     package_dir = package_name and os.path.join(os.getcwd(), package_name) or os.getcwd()
 
     try:
+        from kecpkg.settings import load_settings
         settings = load_settings(package_dir=package_dir)
         return package_dir
     except FileNotFoundError:
@@ -72,6 +72,7 @@ def get_package_dir(package_name=None):
         if os.path.exists(os.path.join(package_dir, 'package_info.json')):
             return package_dir
         else:
+            from kecpkg.settings import SETTINGS_FILENAME
             echo_failure('This does not seem to be a package in path `{}` - please check that there is a '
                          '`package_info.json` or a `{}`'.format(package_dir, SETTINGS_FILENAME))
             sys.exit(1)

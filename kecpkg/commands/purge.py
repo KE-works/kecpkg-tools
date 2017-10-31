@@ -10,8 +10,6 @@ from kecpkg.utils import remove_path
 @click.argument('package', required=False)
 @click.option('--force', '-f', is_flag=True, help="Force purge (no confirmation)")
 def purge(package, **options):
-    print('DO PRUNE OF BUILD ARTIFACTS')
-
     package_name = package or click.prompt('Provide package name')
     package_path = os.path.join(os.getcwd(),package_name)
 
