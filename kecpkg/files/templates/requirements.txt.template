@@ -1,0 +1,7 @@
+# This is the pip requirements file for package `{{ package_name }}`
+# Please add your python package requirements in this file
+
+## core requirements
+# pykechain==<specific version> ## uncomment and pin to a specific version. Latest pykechain is always provided
+
+# additional requirements below

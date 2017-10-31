@@ -1,0 +1,27 @@
+"""
+This script is part of package `{{ package_name }}`
+
+{% if name %}
+Created by: {{ name }} <{{ email }}>
+{% endif %}
+"""
+
+from pykechain import get_project
+import sys
+
+
+def main(**kwargs):
+    """
+    Main entry point of the script
+    :param kwargs:
+    :return:
+    """
+    # # to get the project in KE-chain, uncomment the following line
+    # project = get_project()
+
+    # <insert your python magic here>
+    pass
+
+
+if __name__ == '__main__':
+    sys.exit(main())

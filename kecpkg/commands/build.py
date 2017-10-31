@@ -1,12 +1,9 @@
 import click as click
 
+from kecpkg.commands.utils import CONTEXT_SETTINGS
 
-@click.command()
+
+@click.command(context_settings=CONTEXT_SETTINGS,
+               short_help="Build the package and create a kecpkg file")
 def build(**options):
-    """
-    Created new package directory structure
-
-    :param options:
-    :return:
-    """
-    print('___ DO BUILD STUFF HERE ')
+    print('DO BUILD STUFF HERE ')

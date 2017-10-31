@@ -9,10 +9,12 @@ def ensure_dir_exists(d):
         os.makedirs(d)
 
 
-def create_file(fname):
-    ensure_dir_exists(os.path.dirname(os.path.abspath(fname)))
-    with open(fname, 'a'):
-        os.utime(fname, times=None)
+def create_file(filepath, content=None):
+    ensure_dir_exists(os.path.dirname(os.path.abspath(filepath)))
+    with open(filepath, 'w') as fd:
+        os.utime(filepath, times=None)
+        if content:
+            fd.write(content)
 
 
 def download_file(url, fname):
@@ -50,5 +52,6 @@ def remove_path(path):
 def basepath(path):
     return os.path.basename(os.path.normpath(path))
 
-def normalize_package_name(package_name):
-    return re.sub(r"[-_.]+", "_", package_name).lower()
+
+def snake_case(package_name):
+    return re.sub(r"[-_. ]+", "_", package_name).lower()

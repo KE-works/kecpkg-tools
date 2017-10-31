@@ -1,5 +1,6 @@
 from io import open
 
+import os
 from setuptools import find_packages, setup
 
 with open('kecpkg/__init__.py', 'r') as f:
@@ -13,7 +14,15 @@ with open('kecpkg/__init__.py', 'r') as f:
 with open('README.rst', 'r', encoding='utf-8') as f:
     readme = f.read()
 
-REQUIRES = ['click', 'atomicwrites']
+if os.path.exists('pyproject.toml'):
+    import toml
+    pyproject = toml.load('pyproject.toml')
+
+    REQUIRES = pyproject.get('requires') and  pyproject.get('requires').get('requires') or []
+    TEST_REQUIRES = pyproject.get('requires') and pyproject.get('requires').get('testing_requires') or []
+else:
+    REQUIRES = ['']
+    TEST_REQUIRES = ['coverage', 'pytest']
 
 setup(
     name='kecpkg-tools',
@@ -45,7 +54,7 @@ setup(
     ],
 
     install_requires=REQUIRES,
-    tests_require=['coverage', 'pytest'],
+    tests_require=TEST_REQUIRES,
 
     packages=find_packages(),
     entry_points={

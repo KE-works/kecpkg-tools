@@ -1,0 +1,4 @@
+{
+  "entry_point": "script:main",
+  "requirements_path": "{{ requirements_txt }}"
+}
