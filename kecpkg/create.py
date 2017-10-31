@@ -9,48 +9,44 @@ from kecpkg.files.rendering import render_to_file
 from kecpkg.utils import ensure_dir_exists
 
 
-def create_package(pkg_dir, package_name, settings):
+def create_package(package_dir, settings):
     """
     Create the package directory
 
-    pkg_dir
+    package_name  (or package_dir)
     +-- README.md
     +-- requirements.txt
     +-- package_info.json
-    +-- package_name
-        +-- __init__.py
-        +-- main.py
+    +-- main.py  (settable with settings['entrypoint_script']
 
-
-    :param kecpkg_dir: root dir where to create the kecpkg
-    :param package_name: name of the package
+    :param package_dir: the full path to the package dir
     :param settings: settings dict
     """
-    ensure_dir_exists(pkg_dir)
-    render_to_file('readme.md', content=settings, target_dir=pkg_dir)
-    render_to_file('requirements.txt', content=settings, target_dir=pkg_dir)
+    ensure_dir_exists(package_dir)
+    render_to_file('readme.md', content=settings, target_dir=package_dir)
+    render_to_file('requirements.txt', content=settings, target_dir=package_dir)
     render_to_file('package_info.json', content=dict(requirements_txt='requirements.txt',
                                                      entrypoint_script=settings.get('entrypoint_script'),
                                                      entrypoint_func=settings.get('entrypoint_func')),
-                   target_dir=pkg_dir)
+                   target_dir=package_dir)
     script_filename = '{}.py'.format(settings.get('entrypoint_script'))
-    render_to_file(script_filename, content=settings, template='script.py.template', target_dir=pkg_dir)
+    render_to_file(script_filename, content=settings, template='script.py.template', target_dir=package_dir)
 
 
-def create_venv(pkg_dir, settings, pypath=None, use_global=False, verbose=False):
+def create_venv(package_dir, settings, pypath=None, use_global=False, verbose=False):
     """
     Create the virtual environment in `venv` for the package.
 
     The virtual environment path name can be set in the settings.
 
-    pkg_dir
+    package_dir
     +-- venv  (the virtual environment based on the choosen python version)
         +-- ...
 
-    :param pkg_dir:
-    :param settings:
+    :param package_dir: the full path to the package directory
+    :param settings: the settings dict (including the venv_dir name to create the right venv
     """
-    venv_dir = os.path.join(pkg_dir, settings.get('venv_dir'))
+    venv_dir = os.path.join(package_dir, settings.get('venv_dir'))
 
     command = [sys.executable, '-m', 'virtualenv', venv_dir,
                '-p', pypath or shutil.which(get_proper_python())]

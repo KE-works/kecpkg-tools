@@ -9,10 +9,12 @@ Created by: {{ name }} <{{ email }}>
 from pykechain import get_project
 import sys
 
+__version__ = {{ version }}
 
 def main(**kwargs):
     """
     Main entry point of the script
+
     :param kwargs:
     :return:
     """

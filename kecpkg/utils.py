@@ -1,7 +1,11 @@
 import os
 import re
 import shutil
+import sys
 from urllib.request import urlopen
+
+from kecpkg.commands.utils import echo_warning, echo_failure, echo_info
+from kecpkg.settings import load_settings, SETTINGS_FILENAME
 
 
 def ensure_dir_exists(d):
@@ -55,3 +59,50 @@ def basepath(path):
 
 def normalise_name(package_name):
     return re.sub(r"[-_. ]+", "_", package_name).lower()
+
+
+def get_package_dir(package_name=None):
+    package_dir = package_name and os.path.join(os.getcwd(), package_name) or os.getcwd()
+
+    try:
+        settings = load_settings(package_dir=package_dir)
+        return package_dir
+    except FileNotFoundError:
+        echo_warning('Cannot find settings in path `{}`...'.format(package_dir))
+        if os.path.exists(os.path.join(package_dir, 'package_info.json')):
+            return package_dir
+        else:
+            echo_failure('This does not seem to be a package in path `{}` - please check that there is a '
+                         '`package_info.json` or a `{}`'.format(package_dir, SETTINGS_FILENAME))
+            sys.exit(1)
+
+
+def get_artifacts_on_disk(root_path, exclude_paths=('venv', 'dist'), verbose=False):
+    """
+    retrieve all artifacts on disk
+
+    :param root_path: root_path to collect all artifacts from
+    :param exclude_paths: (optional) directory names and filenames to exclude
+    :return: dictionary with {'property_id': ['attachment_path1', ...], ...}
+    """
+    if not os.path.exists(root_path):
+        echo_failure("The root path: '{}' does not exist".format(root_path))
+        sys.exit(1)
+
+    # getting all attachments
+    artifacts = []
+    for root, dirs, filenames in os.walk(root_path):
+        # remove the excluded paths
+        for exclude_path in exclude_paths:
+            if exclude_path in dirs:
+                dirs.remove(exclude_path)
+
+        for filename in filenames:
+            full_artifact_subpath = '{}{}{}'.format(root, os.path.sep, filename). \
+                replace('{}{}'.format(root_path, os.path.sep), '')
+            artifacts.append(full_artifact_subpath)
+            if verbose:
+                echo_info('Found `{}`'.format(full_artifact_subpath))
+    if verbose:
+        echo_info('{}'.format(artifacts))
+    return artifacts

@@ -26,16 +26,13 @@ def new(name=None, **options):
     :param options:
     :return:
     """
-    print('___ DO NEW STUFF HERE ')
-
     try:
         settings = load_settings()
     except FileNotFoundError:
         settings = copy_default_settings()
-        echo_warning(
-            'The default package structure will be used.'
-        )
     package_root_dir = os.getcwd()
+
+    # set the package name, clean an normalise using snake_case
     package_name = name or click.prompt("Project name")
     package_name = normalise_name(package_name)
 
@@ -63,7 +60,7 @@ def new(name=None, **options):
         settings['venv_dir'] = normalise_name(options.get('venv'))
 
     echo_info("Creating package structure")
-    create_package(package_dir, package_name=package_name, settings=settings)
+    create_package(package_dir, settings=settings)
     if not options.get('no_venv'):
         echo_info("Creating virtual environment")
         create_venv(package_dir, settings, pypath=None, use_global=options.get('global_packages'),
@@ -71,7 +68,7 @@ def new(name=None, **options):
     else:
         settings['venv_dir'] = None
 
-    # feed back stuff here.
+    # save the settings (in the package_dir)
     save_settings(settings, package_dir=package_dir)
 
     echo_success('Package `{package_name}` created in `{package_dir}`'.format(package_name=package_name,

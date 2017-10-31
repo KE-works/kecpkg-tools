@@ -14,7 +14,9 @@
 `{{ package_name }}` is a python package that may be used interactively or used within
 KE-chain as a SIM package.
 
+{% if description %}
 {{ description }}
+{% endif %}
 
 ## Use
 
@@ -25,6 +27,4 @@ execution environments {{ supported_versions }}.
 ## Contact Info
 
 Please contact {{ author }} at {{ email }} for further information
-
 {% endif %}
-
