@@ -1,8 +1,11 @@
 -e .
 click
+atomicwrites
+jinja2
 
 
 # testing
 tox
 hatch
+toml
 

@@ -1,0 +1,30 @@
+# {{ package_name }} readme
+
+**Table of Contents**
+
+* [Description](#Description)
+* [Installation](#installation)
+{% if author %}
+* [Contact Info](#Contact Info)
+{% endif %}
+
+
+## Description
+
+`{{ package_name }}` is a python package that may be used interactively or used within
+KE-chain as a SIM package.
+
+{{ description }}
+
+## Use
+
+`{{ package_name }}` is a KE-chain SIM package and can be execution in the Python
+execution environments {{ supported_versions }}.
+
+{% if author %}
+## Contact Info
+
+Please contact {{ author }} at {{ email }} for further information
+
+{% endif %}
+
