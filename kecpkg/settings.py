@@ -14,7 +14,9 @@ DEFAULT_SETTINGS = OrderedDict([
     ('version', '0.0.1'),
     ('pyversions', ['2.7', '3.5']),
     ('python_version', '3.5'),
-    ('venv_dir', 'venv')
+    ('venv_dir', 'venv'),
+    ('entrypoint_script', 'script'),
+    ('entrypoint_func', 'main')
 ])
 
 

@@ -13,7 +13,7 @@
     <module name="kecpkg-tools" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/kecpkg/__main__.py" />
-    <option name="PARAMETERS" value="new &quot;some pkg&quot;" />
+    <option name="PARAMETERS" value="new &quot;some pkg&quot; --script main.py" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <method />

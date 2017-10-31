@@ -53,5 +53,5 @@ def basepath(path):
     return os.path.basename(os.path.normpath(path))
 
 
-def snake_case(package_name):
+def normalise_name(package_name):
     return re.sub(r"[-_. ]+", "_", package_name).lower()

@@ -1,4 +1,4 @@
 {
-  "entry_point": "script:main",
+  "entry_point": "{{ entrypoint_script }}:{{ entrypoint_func }}",
   "requirements_path": "{{ requirements_txt }}"
 }
