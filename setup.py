@@ -2,7 +2,7 @@ from io import open
 
 from setuptools import find_packages, setup
 
-with open('kecpkg_tools/__init__.py', 'r') as f:
+with open('kecpkg/__init__.py', 'r') as f:
     for line in f:
         if line.startswith('__version__'):
             version = line.strip().split('=')[1].strip(' \'"')
@@ -13,7 +13,7 @@ with open('kecpkg_tools/__init__.py', 'r') as f:
 with open('README.rst', 'r', encoding='utf-8') as f:
     readme = f.read()
 
-REQUIRES = []
+REQUIRES = ['click', 'atomicwrites']
 
 setup(
     name='kecpkg-tools',
@@ -48,4 +48,9 @@ setup(
     tests_require=['coverage', 'pytest'],
 
     packages=find_packages(),
+    entry_points={
+        'console_scripts': (
+            'kecpkg = kecpkg.cli:kecpkg',
+        ),
+    }
 )
