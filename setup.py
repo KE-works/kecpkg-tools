@@ -1,3 +1,4 @@
+from glob import glob
 from io import open
 
 import os
@@ -57,6 +58,12 @@ setup(
     tests_require=TEST_REQUIRES,
 
     packages=find_packages(exclude=['tests']),
+
+    # to include the templates in the bdist wheel, we need to add package_data here
+    package_data={
+        'kecpkg': ['files/templates/*.template']
+    },
+
     entry_points={
         'console_scripts': (
             'kecpkg = kecpkg.cli:kecpkg',
