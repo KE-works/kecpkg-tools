@@ -5,8 +5,7 @@ from kecpkg.commands.new import new
 from kecpkg.commands.prune import prune
 from kecpkg.commands.purge import purge
 from kecpkg.commands.upload import upload
-
-from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info
+from kecpkg.commands.utils import CONTEXT_SETTINGS
 
 
 class AliasedGroup(click.Group):

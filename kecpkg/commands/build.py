@@ -35,7 +35,7 @@ def build_package(package_dir, build_dir, settings, verbose=False):
     """Perform the actual building of the kecpkg zip"""
     artifacts = get_artifacts_on_disk(package_dir, verbose=verbose)
     dist_filename = '{}-{}-py{}.kecpkg'.format(settings.get('package_name'), settings.get('version'),
-                                            settings.get('python_version'))
+                                               settings.get('python_version'))
     echo_info('Creating package name `{}`'.format(dist_filename))
 
     with ZipFile(os.path.join(build_dir, dist_filename), 'x') as dist_zip:

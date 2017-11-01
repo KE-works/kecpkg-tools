@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from kecpkg.commands.utils import echo_warning, echo_failure, CONTEXT_SETTINGS, echo_info, echo_success
+from kecpkg.commands.utils import echo_failure, CONTEXT_SETTINGS, echo_info, echo_success
 from kecpkg.create import create_package, create_venv
 from kecpkg.settings import load_settings, copy_default_settings, save_settings
 from kecpkg.utils import normalise_name

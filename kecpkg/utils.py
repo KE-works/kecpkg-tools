@@ -65,7 +65,8 @@ def get_package_dir(package_name=None):
 
     try:
         from kecpkg.settings import load_settings
-        settings = load_settings(package_dir=package_dir)
+        # load settings just to test that we are inside a package dir
+        load_settings(package_dir=package_dir)
         return package_dir
     except FileNotFoundError:
         echo_warning('Cannot find settings in path `{}`...'.format(package_dir))

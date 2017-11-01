@@ -1,5 +1,6 @@
-import click
 import os
+
+import click
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_warning, echo_failure, echo_success
 from kecpkg.utils import remove_path
@@ -11,10 +12,11 @@ from kecpkg.utils import remove_path
 @click.option('--force', '-f', is_flag=True, help="Force purge (no confirmation)")
 def purge(package, **options):
     package_name = package or click.prompt('Provide package name')
-    package_path = os.path.join(os.getcwd(),package_name)
+    package_path = os.path.join(os.getcwd(), package_name)
 
     if os.path.exists(package_path):
-        if options.get('force') or click.confirm("Do you want to purge and completely remove '{}'?".format(package_name)):
+        if options.get('force') or click.confirm(
+                "Do you want to purge and completely remove '{}'?".format(package_name)):
             remove_path(package_path)
             if not os.path.exists(package_path):
                 echo_success('Package `{}` is purged and removed from disk'.format(package_name))
@@ -24,5 +26,3 @@ def purge(package, **options):
             echo_warning('Package `{}` will not be purged'.format(package_name))
     else:
         echo_failure('Package `{}` does not exist'.format(package_name))
-
-

@@ -10,7 +10,7 @@ url = 'https://github.com/_/kecpkg-tools'
 [requires]
 python_version = ['2.7', '3.5', '3.6', 'pypy', 'pypy3']
 requires = ['click', 'atomicwrites', 'jinja2', 'hatch']
-testing_requires = ['coverage', 'pytest', 'toml']
+testing_requires = ['coverage', 'pytest', 'toml', 'flake8', ]
 
 [build-system]
 requires = ['setuptools', 'wheel']

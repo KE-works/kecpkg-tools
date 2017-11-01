@@ -1,0 +1,68 @@
+# this file is *not* meant to cover or endorse the use of tox or pytest or
+# testing in general,
+#
+#  It's meant to show the use of:
+#
+#  - check-manifest
+#     confirm items checked into vcs are in your sdist
+#  - python setup.py check (using the readme_renderer extension)
+#     confirms your long_description will render correctly on pypi
+#
+#  and also to help confirm pull requests to this project.
+
+[tox]
+envlist = py27, py34, py35, py36, pypy, dist_and_docs
+
+[travis]
+python =
+    3.5: py35, dist_and_docs
+
+[testenv]
+passenv = TRAVIS TRAVIS_JOB_ID TRAVIS_BRANCH
+deps =
+    pytest
+    coverage
+    coveralls
+    typing
+    six
+
+commands =
+    coverage run --source=pykechain setup.py test
+    py36: coveralls
+
+[testenv:dist_and_docs]
+passenv = TRAVIS TRAVIS_JOB_ID TRAVIS_BRANCH
+basepython = python3.5
+deps =
+    check-manifest
+    readme_renderer
+    flake8
+    pydocstyle
+    typing
+    mypy
+commands =
+    flake8 pykechain
+    pydocstyle pykechain
+    mypy pykechain
+    check-manifest
+    python setup.py check -m -r -s
+
+
+# test settings
+[flake8]
+max-line-length = 120
+statistics = True
+
+[pydocstyle]
+ignore = D100,D105,D203,D212,D213
+
+#from: http://www.pydocstyle.org/en/latest/error_codes.html
+#D100	Missing docstring in public module
+#D105	Missing docstring in magic method
+#D203	1 blank line required before class docstring
+#D212	Multi-line docstring summary should start at the first line
+#D213	Multi-line docstring summary should start at the second line
+
+[pytest]
+addopts = -l --color=yes -v
+testpaths = tests

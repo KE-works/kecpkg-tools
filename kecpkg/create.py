@@ -11,7 +11,7 @@ from kecpkg.utils import ensure_dir_exists
 
 def create_package(package_dir, settings):
     """
-    Create the package directory
+    Create the package directory.
 
     package_name  (or package_dir)
     +-- README.md
