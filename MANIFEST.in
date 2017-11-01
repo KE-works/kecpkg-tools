@@ -1,3 +1,9 @@
 include README.rst
 include LICENSE
 include kecpkg/*.py
+include requirements.txt
+include tox.ini
+
+graft test
+
+global-exclude *.pyc

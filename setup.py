@@ -56,7 +56,7 @@ setup(
     install_requires=REQUIRES,
     tests_require=TEST_REQUIRES,
 
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     entry_points={
         'console_scripts': (
             'kecpkg = kecpkg.cli:kecpkg',
