@@ -34,7 +34,7 @@ setup(
     author_email='jochem.berends@ke-works.com',
     maintainer='Jochem Berends',
     maintainer_email='jochem.berends@ke-works.com',
-    url='https://github.com/_/kecpkg-tools',
+    url='https://github.com/jberends/kecpkg-tools',
     license='Apache-2.0',
 
     keywords=[
