@@ -20,7 +20,7 @@ from kecpkg.utils import normalise_name
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
 def new(name=None, **options):
     """
-    Created new package directory structure
+    Create a new package directory structure.
 
     :param name: Name of the kecpkg package
     :param options:

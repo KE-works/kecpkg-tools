@@ -11,6 +11,13 @@ from kecpkg.utils import remove_path
 @click.argument('package', required=False)
 @click.option('--force', '-f', is_flag=True, help="Force purge (no confirmation)")
 def purge(package, **options):
+    """
+    Purge and clean a package directory structure.
+
+    :param package: Name of the kecpkg package
+    :param options:
+    :return:
+    """
     package_name = package or click.prompt('Provide package name')
     package_path = os.path.join(os.getcwd(), package_name)
 

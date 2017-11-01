@@ -8,6 +8,7 @@ __environment = None
 
 
 def get_environment():
+    """Retrieve the jinja 2 environment as this is a singleton."""
     global __environment
     if not __environment:
         __environment = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
@@ -15,16 +16,29 @@ def get_environment():
 
 
 def get_template(template):
+    """
+    From the rendering environment, retrieve the template.
+
+    :param template: template name
+    :return: Template
+    """
     return get_environment().get_template(template)
 
 
 def render_to_template(template, content):
+    """
+    Render content (dict) to the template.
+
+    :param template: name of the jinja2 template file
+    :param content: dictionary with content to render
+    :return: rendered template (as string)
+    """
     return get_template(template).render(content)
 
 
 def render_to_file(filename, content, target_dir=None, template=None):
     """
-    Render content to a template file in a target_dir
+    Render content to a template file in a target_dir.
 
     :param filename: filename (basename) to render to
     :param content: dictionary to render in the template

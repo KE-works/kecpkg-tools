@@ -14,6 +14,7 @@ from kecpkg.utils import ensure_dir_exists, remove_path, get_package_dir, get_ar
 @click.option('--clean', 'clean_first', is_flag=True, help='Remove build artifacts before building')
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
 def build(package=None, **options):
+    """Build the package and create a kecpkg file."""
     echo_info('Locating package ``'.format(package))
     package_dir = get_package_dir(package_name=package)
     package_name = os.path.basename(package_dir)
@@ -32,7 +33,7 @@ def build(package=None, **options):
 
 
 def build_package(package_dir, build_dir, settings, verbose=False):
-    """Perform the actual building of the kecpkg zip"""
+    """Perform the actual building of the kecpkg zip."""
     artifacts = get_artifacts_on_disk(package_dir, verbose=verbose)
     dist_filename = '{}-{}-py{}.kecpkg'.format(settings.get('package_name'), settings.get('version'),
                                                settings.get('python_version'))

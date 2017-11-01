@@ -9,12 +9,15 @@ from kecpkg.commands.utils import CONTEXT_SETTINGS
 
 
 class AliasedGroup(click.Group):
+    """Intermediate class to combine the kecpkg command groups."""
+
     pass
 
 
 @click.group(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
 @click.version_option()
 def kecpkg():
+    """KE-chain Package manager toolset."""
     pass
 
 
