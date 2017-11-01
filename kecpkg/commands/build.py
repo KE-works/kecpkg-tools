@@ -22,23 +22,24 @@ def build(package=None, **options):
     settings = load_settings(package_dir=package_dir)
 
     # ensure build directory is there
-    build_dir = os.path.join(package_dir, 'dist')
+    build_dir = settings.get('build_dir', 'dist')
+    build_path = os.path.join(package_dir, build_dir)
 
     if options.get('clean_first'):
-        remove_path(build_dir)
-    ensure_dir_exists(build_dir)
+        remove_path(build_path)
+    ensure_dir_exists(build_path)
 
     # do package building
-    build_package(package_dir, build_dir, settings, verbose=options.get('verbose'))
+    build_package(package_dir, build_path, settings, verbose=options.get('verbose'))
 
 
-def build_package(package_dir, build_dir, settings, verbose=False):
+def build_package(package_dir, build_path, settings, verbose=False):
     """Perform the actual building of the kecpkg zip."""
     artifacts = get_artifacts_on_disk(package_dir, verbose=verbose)
     dist_filename = '{}-{}-py{}.kecpkg'.format(settings.get('package_name'), settings.get('version'),
                                                settings.get('python_version'))
     echo_info('Creating package name `{}`'.format(dist_filename))
 
-    with ZipFile(os.path.join(build_dir, dist_filename), 'x') as dist_zip:
+    with ZipFile(os.path.join(build_path, dist_filename), 'x') as dist_zip:
         for artifact in artifacts:
             dist_zip.write(os.path.join(package_dir, artifact), arcname=artifact)

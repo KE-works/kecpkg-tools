@@ -3,7 +3,7 @@ import os
 import click
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_warning, echo_failure, echo_success
-from kecpkg.utils import remove_path
+from kecpkg.utils import remove_path, get_package_dir
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,
@@ -19,13 +19,13 @@ def purge(package, **options):
     :return:
     """
     package_name = package or click.prompt('Provide package name')
-    package_path = os.path.join(os.getcwd(), package_name)
+    package_dir = get_package_dir(package_name)
 
-    if os.path.exists(package_path):
+    if os.path.exists(package_dir):
         if options.get('force') or click.confirm(
                 "Do you want to purge and completely remove '{}'?".format(package_name)):
-            remove_path(package_path)
-            if not os.path.exists(package_path):
+            remove_path(package_dir)
+            if not os.path.exists(package_dir):
                 echo_success('Package `{}` is purged and removed from disk'.format(package_name))
             else:
                 echo_failure('Something went wrong pruning pacakage `{}`'.format(package_name))
