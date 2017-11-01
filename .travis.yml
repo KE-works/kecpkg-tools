@@ -10,6 +10,7 @@ python:
   - "pypy3"
 
 install:
+  pip install toml
   pip install tox-travis
 
 script: tox
