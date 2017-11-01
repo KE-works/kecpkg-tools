@@ -1,9 +1,16 @@
 include README.rst
 include LICENSE
-include kecpkg/*.py
 include requirements.txt
 include tox.ini
+include pyproject.toml
+recursive-include kecpkg *.template
 
-graft test
+graft tests
+graft kecpkg
+prune .idea
 
 global-exclude *.pyc
+
+exclude .coveragerc
+
+
