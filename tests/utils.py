@@ -2,9 +2,18 @@ import os
 import socket
 from contextlib import contextmanager
 from tempfile import TemporaryDirectory
+from unittest import TestCase
 
 import pytest
+from click.testing import CliRunner
 
+
+class BaseTestCase(TestCase):
+    def SetUp(self):
+        self.runner = CliRunner()
+
+    def assertExists(self, path):
+        self.assertTrue(os.path.exists(path), "Path `{}` does not exists".format(path))
 
 @contextmanager
 def temp_chdir(cwd=None):

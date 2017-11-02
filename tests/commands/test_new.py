@@ -1,18 +1,15 @@
-from unittest import TestCase
-
 import os
+
 from click.testing import CliRunner
 
 from kecpkg.cli import kecpkg
-from tests.utils import temp_chdir
+from tests.utils import temp_chdir, BaseTestCase
 
-class TestCommandNew(TestCase):
-    def SetUp(self):
-        self.runner = CliRunner
 
+class TestCommandNew(BaseTestCase):
     def test_new_non_interactive(self):
         pkgname = 'new_pkg'
-        
+
         with temp_chdir() as d:
             runner = CliRunner()
             result = runner.invoke(kecpkg, ['new', pkgname, '--no-venv'])

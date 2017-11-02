@@ -1,27 +1,23 @@
-import os
-from glob import glob
 from io import open
+
+import os
 from setuptools import find_packages, setup
 
-with open('kecpkg/__init__.py', 'r') as f:
-    for line in f:
-        if line.startswith('__version__'):
-            version = line.strip().split('=')[1].strip(' \'"')
-            break
-    else:
-        version = '0.0.1'
+PACKAGE_NAME = 'kecpkg'
+HERE = os.path.abspath(os.path.dirname(__file__))
 
-with open('README.rst', 'r', encoding='utf-8') as f:
-    readme = f.read()
+with open(os.path.join(HERE, 'README.rst'), 'r') as f:
+    long_description = f.read()
 
-REQUIRES = ['click', 'atomicwrites', 'jinja2', 'pykechain', 'hatch']
-TEST_REQUIRES = ['coverage', 'pytest', 'flake8']
+ABOUT = {}
+with open(os.path.join(PACKAGE_NAME, '__init__.py'), 'r') as f:
+    exec(f.read(), ABOUT)
 
 setup(
     name='kecpkg-tools',
-    version=version,
+    version=ABOUT.get('__version__'),
     description='',
-    long_description=readme,
+    long_description=long_description,
     author='Jochem Berends',
     author_email='jochem.berends@ke-works.com',
     maintainer='Jochem Berends',
@@ -29,11 +25,16 @@ setup(
     url='https://github.com/jberends/kecpkg-tools',
     license='Apache-2.0',
 
-    keywords=[
-        '',
-    ],
+    keywords=(
+        'python',
+        'package tools',
+        'pykechain',
+        'KE-chain',
+        'Services Integration Module',
+        'SIM'
+    ),
 
-    classifiers=[
+    classifiers=(
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
@@ -44,10 +45,21 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
-    ],
+    ),
 
-    install_requires=REQUIRES,
-    tests_require=TEST_REQUIRES,
+    install_requires=(
+        'click',
+        'atomicwrites',
+        'jinja2',
+        'pykechain',
+        'hatch'
+    ),
+
+    tests_require=(
+        'coverage',
+        'pytest',
+        'flake8'
+    ),
 
     packages=find_packages(exclude=['tests']),
 

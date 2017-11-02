@@ -151,7 +151,8 @@ def validate_scopes(scope_guess, scope_matcher):
             scope_matches.append(scope_match)
         elif scope_guess.lower() in scope_match['scope'].lower():
             scope_matches.append(scope_match)
-    #only return when a single scope is matched
+
+    # only return when a single scope is matched
     if len(scope_matches) == 1:
         return scope_matches[0]
     return None
