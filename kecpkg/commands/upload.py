@@ -1,11 +1,10 @@
-import click as click
 import os
-
 import sys
 
+import click as click
 import requests
-from requests.compat import urljoin
 from pykechain import Client, get_project
+from requests.compat import urljoin
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info, echo_success, echo_failure
 from kecpkg.settings import load_settings
@@ -22,7 +21,9 @@ from kecpkg.utils import get_package_dir, get_package_name
 @click.option('--scope', help="scope name to upload the kecpkg to")
 @click.option('--scope-id', help="UUID of the scope to upload the kecpkg to", type=click.UUID)
 @click.option('--interactive', '-i', is_flag=True, help="interactive mode; guide me through the upload")
-def upload(package=None, url=None, username=None, password=None, token=None, scope=None, scope_id=None, **options):
+@click.option('--kecpkg', help="(optional) path to the kecpkg file to upload")
+def upload(package=None, url=None, username=None, password=None, token=None, scope=None, scope_id=None, kecpkg=None,
+           **options):
     """
     Upload built kecpkg to KE-chain.
 
@@ -39,7 +40,6 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
         client = Client(url)
         client.login(username=username, password=password)
         scopes = client.scopes()
-        str_tpl = "{number} - {id} - {name}"
         scope_matcher = [dict(number=i, scope_id=scope.id, scope=scope.name) for i, scope in
                          zip(range(1, len(scopes)), scopes)]
 
@@ -49,7 +49,7 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
             echo_info("{number} | {scope_id:.8} | {scope}".format(**match_dict))
 
         scope_match = None
-        while not scope_match:
+        while not scope_match and len(scope_match) > 1:
             scope_guess = click.prompt('Row number, part of Id or Scope')
             scope_match = validate_scopes(scope_guess, scope_matcher)
 
@@ -62,27 +62,35 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
         echo_failure('Cannot find build path, please do build kecpkg first')
         sys.exit(400)
     scope_to_upload = get_project(url, username, password, token, scope_id=scope_id)
-    upload_package(scope_to_upload, build_path, settings)
+    upload_package(scope_to_upload, build_path, kecpkg, settings)
 
 
-def upload_package(scope, build_path, settings):
+def upload_package(scope, build_path=None, kecpkg_path=None, settings=None):
     """
-    Upload the package from build_path to the right scope, create a new KE-chain SIM service
+    Upload the package from build_path to the right scope, create a new KE-chain SIM service.
+
     :param scope: scope object (pykechain)
     :param build_path: path to the build directory in which the to-be uploaded script resides
+    :param kecpkg_path: path to the kecpkg file to upload (no need to provide build_path)
     :param settings: settings of the package
     :return: None
     """
-    built_kecpkgs = os.listdir(build_path)
-    if len(built_kecpkgs) > 1 and settings.get('version'):
-        built_kecpkgs = [f for f in built_kecpkgs if settings.get('version') in f]
-    if len(built_kecpkgs) == 1:
-        kecpkg_path = os.path.join(build_path, built_kecpkgs[0])
+    if not (kecpkg_path and not build_path) or not (build_path and not kecpkg_path):
+        echo_failure("You should provide a build path or a kecpkg path")
+        sys.exit(404)
+    if os.path.exists(kecpkg_path):
+        kecpkg_path = kecpkg_path
     else:
-        echo_info('Provide correct filename to upload')
-        echo_info('\n'.join(os.listdir(build_path)))
-        kecpkg_filename = click.prompt('Filename')
-        kecpkg_path = os.path.join(build_path, kecpkg_filename)
+        built_kecpkgs = os.listdir(build_path)
+        if not kecpkg_path and len(built_kecpkgs) > 1 and settings.get('version'):
+            built_kecpkgs = [f for f in built_kecpkgs if settings.get('version') in f]
+        if not kecpkg_path and len(built_kecpkgs) == 1:
+            kecpkg_path = os.path.join(build_path, built_kecpkgs[0])
+        else:
+            echo_info('Provide correct filename to upload')
+            echo_info('\n'.join(os.listdir(build_path)))
+            kecpkg_filename = click.prompt('Filename')
+            kecpkg_path = os.path.join(build_path, kecpkg_filename)
 
     if kecpkg_path and os.path.exists(kecpkg_path):
         # ready to upload
@@ -91,10 +99,11 @@ def upload_package(scope, build_path, settings):
         echo_failure('Unable to locate kecpkg to upload')
         sys.exit(404)
 
-    # get mata and prepare 2 stage submission
+    # get meta and prepare 2 stage submission
     # 1. fill service information
     # 2. do upload
 
+    # Create new service in KE-chain
     payload = dict(
         name=settings.get('package_name'),
         description=settings.get('description', ''),
@@ -113,14 +122,15 @@ def upload_package(scope, build_path, settings):
     response = r.json()
     new_service = response.get('results')[0]
 
-    # now upload
-    r = scope._client._request('POST', "{}/{}".format(new_service.get('url'),'upload.json'),
+    # Upload as attachment to new service in KE-chain
+    r = scope._client._request('POST', "{}/{}".format(new_service.get('url'), 'upload.json'),
                                files={'attachment': (os.path.basename(kecpkg_path), open(kecpkg_path, 'rb'))})
 
     if r.status_code != requests.codes.accepted:
         echo_failure('Unexpected response from the server: {}'.format((r, r.text)))
         sys.exit(r.status_code)
 
+    # Wrap up party!
     echo_success("kecpkg `{}` successfully uploaded to KE-chain.".format(os.path.basename(kecpkg_path)))
     success_url = "{api_root}/#scopes/{scope_id}/scripts/{script_id}".format(
         api_root=scope._client.api_root,
@@ -131,51 +141,17 @@ def upload_package(scope, build_path, settings):
 
 
 def validate_scopes(scope_guess, scope_matcher):
-    """Check the scope guess against a set of possible scopes and return correct scope_id"""
+    """Check the scope guess against a set of possible scopes and return correct scope_id."""
+    scope_matches = []
     for scope_match in scope_matcher:
+        # order is important as '1' can also be in UUID and Name, so we use exclusive if statements
         if scope_guess == str(scope_match['number']):
-            return scope_match
-        if len(scope_guess) >= 2 and scope_guess.lower() in scope_match['scope_id'].lower():
-            return scope_match
-        if scope_guess.lower() in scope_match['scope'].lower():
-            return scope_match
+            scope_matches.append(scope_match)
+        elif len(scope_guess) >= 2 and scope_guess.lower() in scope_match['scope_id'].lower():
+            scope_matches.append(scope_match)
+        elif scope_guess.lower() in scope_match['scope'].lower():
+            scope_matches.append(scope_match)
+    #only return when a single scope is matched
+    if len(scope_matches) == 1:
+        return scope_matches[0]
     return None
-
-
-"""
-NEW SCRIPT
-
-Request:
-
-    URL: https://kec2api.ke-chain.com/api/services.json?_dc=1509571322573
-    Request Method:POST
-    Status Code:201 Created
-
-    {"name":"name","description":"descr","script_version":"0.0.1",
-    "script_type":"PYTHON SCRIPT","env_version":"3.5",
-    "id":"Service-1",
-    "scope":"6f7bc9f0-228e-4d3a-9dc0-ec5a75d73e1d"}
-
-Response:
-{"results":[
-    {"id":"be473cc2-9342-4b33-85dc-8b16ae67d79b",
-    "url":"https://kec2api.ke-chain.com/api/services/be473cc2-9342-4b33-85dc-8b16ae67d79b",
-    "name":"name","description":"descr",
-    "scope":"6f7bc9f0-228e-4d3a-9dc0-ec5a75d73e1d",
-    "script_file_name":"","script_type":"PYTHON SCRIPT",
-    "script_version":"0.0.1","env_version":"3.5",
-    "permissions":{"read":true,"destroy":true,"update":true,"create":true,"write":true,"retrieve_execute":true}}]}
-
-UPLOAD SCRIPT
-
-Request URL:https://kec2api.ke-chain.com/api/services/be473cc2-9342-4b33-85dc-8b16ae67d79b/upload.json
-Request Method:POST
-Payload:
-------WebKitFormBoundarygA6v9Rm8hnD5tPfv
-Content-Disposition: form-data; name="attachment"; filename="some_pkg-0.0.1-py3.5.kecpkg"
-Content-Type: application/octet-stream
-
-SUCCES URI
-https://kec2api.ke-chain.com/#scopes/6f7bc9f0-228e-4d3a-9dc0-ec5a75d73e1d/scripts/66c768d3-8c6d-4a0e-b74f-4b3e5fa92dc3
-
-"""

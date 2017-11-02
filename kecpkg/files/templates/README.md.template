@@ -4,9 +4,9 @@
 
 * [Description](#Description)
 * [Installation](#installation)
-{% if author %}
+{%- if author -%}
 * [Contact Info](#Contact Info)
-{% endif %}
+{%- endif -%}
 
 
 ## Description

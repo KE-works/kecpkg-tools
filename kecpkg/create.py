@@ -23,13 +23,16 @@ def create_package(package_dir, settings):
     :param settings: settings dict
     """
     ensure_dir_exists(package_dir)
-    render_to_file('readme.md', content=settings, target_dir=package_dir)
+    render_to_file('README.md', content=settings, target_dir=package_dir)
     render_to_file('requirements.txt', content=settings, target_dir=package_dir)
     render_to_file('package_info.json', content=dict(requirements_txt='requirements.txt',
                                                      entrypoint_script=settings.get('entrypoint_script'),
                                                      entrypoint_func=settings.get('entrypoint_func')),
                    target_dir=package_dir)
+    render_to_file('.gitignore', content={}, target_dir=package_dir)
+
     script_filename = '{}.py'.format(settings.get('entrypoint_script'))
+
     render_to_file(script_filename, content=settings, template='script.py.template', target_dir=package_dir)
 
 

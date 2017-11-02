@@ -1,11 +1,11 @@
+#!/usr/bin/env python
 """
 This script is part of package `{{ package_name }}`
 
-{% if name %}
+{%- if name -%}
 Created by: {{ name }} <{{ email }}>
-{% endif %}
+{%- endif -%}
 """
-
 from pykechain import get_project
 import sys
 

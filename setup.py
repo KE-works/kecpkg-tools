@@ -1,7 +1,6 @@
+import os
 from glob import glob
 from io import open
-
-import os
 from setuptools import find_packages, setup
 
 with open('kecpkg/__init__.py', 'r') as f:
@@ -15,15 +14,8 @@ with open('kecpkg/__init__.py', 'r') as f:
 with open('README.rst', 'r', encoding='utf-8') as f:
     readme = f.read()
 
-if os.path.exists('pyproject.toml'):
-    import toml
-    pyproject = toml.load('pyproject.toml')
-
-    REQUIRES = pyproject.get('requires') and  pyproject.get('requires').get('requires') or []
-    TEST_REQUIRES = pyproject.get('requires') and pyproject.get('requires').get('testing_requires') or []
-else:
-    REQUIRES = ['']
-    TEST_REQUIRES = ['coverage', 'pytest']
+REQUIRES = ['click', 'atomicwrites', 'jinja2', 'pykechain', 'hatch']
+TEST_REQUIRES = ['coverage', 'pytest', 'flake8']
 
 setup(
     name='kecpkg-tools',

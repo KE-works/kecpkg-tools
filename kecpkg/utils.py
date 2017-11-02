@@ -4,7 +4,7 @@ import shutil
 import sys
 from urllib.request import urlopen
 
-from kecpkg.commands.utils import echo_warning, echo_failure, echo_info
+from kecpkg.commands.utils import echo_failure, echo_info
 
 
 def ensure_dir_exists(d):
@@ -110,7 +110,6 @@ def get_package_dir(package_name=None, fail=True):
     :param fail: (optional, default=True) fail hard with exit when no package dir found
     :return: full path name to the package directory
     """
-
     def _inner(d):
         from kecpkg.settings import load_settings
         try:
@@ -140,7 +139,7 @@ def get_package_dir(package_name=None, fail=True):
 
 def get_package_name():
     """
-    Provide the name of the package (in current dir)
+    Provide the name of the package (in current dir).
 
     :param fail: ensure that directory search does not fail in a exit.
     :return: package name or None

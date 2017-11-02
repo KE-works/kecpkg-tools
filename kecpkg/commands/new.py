@@ -11,20 +11,26 @@ from kecpkg.utils import normalise_name
 
 @click.command(short_help="Create a new kecpkg SIM script package",
                context_settings=CONTEXT_SETTINGS)
-@click.argument('name', required=False)
+@click.argument('package', required=False)
 @click.option('--venv', help="name of the virtual python environment to create")
 @click.option('--script', help="name of the script inside the package that contains the entrypoint")
 @click.option('--global-packages', is_flag=True,
               help='Gives created virtual envs access to the global site-packages.')
 @click.option('--no-venv', help="suppress the creation of the virtual environment", is_flag=True)
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
-def new(name=None, **options):
+def new(package=None, **options):
     """
     Create a new package directory structure.
 
-    :param name: Name of the kecpkg package
-    :param options:
-    :return:
+    <pkg dir>
+    ├── venv
+    │   └── ... <the virtualenvironment>
+    ├── README.md
+    ├── requirements.txt
+    ├── script.py
+    ├── package-info.json
+    ├── .gitignore
+    └── .kecpkg-settings.json
     """
     try:
         settings = load_settings()
@@ -33,7 +39,7 @@ def new(name=None, **options):
     package_root_dir = os.getcwd()
 
     # set the package name, clean an normalise using snake_case
-    package_name = name or click.prompt("Project name")
+    package_name = package or click.prompt("Package name")
     package_name = normalise_name(package_name)
 
     # save to settings
@@ -44,7 +50,7 @@ def new(name=None, **options):
         echo_failure("Directory '{}' already exists.".format(package_dir))
         sys.exit(1)
 
-    if not name:
+    if not package:
         settings['version'] = click.prompt('Version', default=settings.get('version', '0.0.1'))
         settings['description'] = click.prompt('Description', default='')
         settings['name'] = click.prompt('Author', default=settings.get('name', ''))
