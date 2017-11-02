@@ -49,7 +49,7 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
             echo_info("{number} | {scope_id:.8} | {scope}".format(**match_dict))
 
         scope_match = None
-        while not scope_match and len(scope_match) > 1:
+        while not scope_match:
             scope_guess = click.prompt('Row number, part of Id or Scope')
             scope_match = validate_scopes(scope_guess, scope_matcher)
 
@@ -75,10 +75,10 @@ def upload_package(scope, build_path=None, kecpkg_path=None, settings=None):
     :param settings: settings of the package
     :return: None
     """
-    if not (kecpkg_path and not build_path) or not (build_path and not kecpkg_path):
-        echo_failure("You should provide a build path or a kecpkg path")
-        sys.exit(404)
-    if os.path.exists(kecpkg_path):
+    # if not (kecpkg_path and not build_path) or not (build_path and not kecpkg_path):
+    #     echo_failure("You should provide a build path or a kecpkg path")
+    #     sys.exit(404)
+    if kecpkg_path and os.path.exists(kecpkg_path):
         kecpkg_path = kecpkg_path
     else:
         built_kecpkgs = os.listdir(build_path)

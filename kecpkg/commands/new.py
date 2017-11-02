@@ -23,14 +23,14 @@ def new(package=None, **options):
     Create a new package directory structure.
 
     <pkg dir>
-    ├── venv
-    │   └── ... <the virtualenvironment>
-    ├── README.md
-    ├── requirements.txt
-    ├── script.py
-    ├── package-info.json
-    ├── .gitignore
-    └── .kecpkg-settings.json
+    +-- venv
+    |   +-- ... <the virtualenvironment>
+    +-- README.md
+    +-- requirements.txt
+    +-- script.py
+    +-- package-info.json
+    +-- .gitignore
+    +-- .kecpkg-settings.json
     """
     try:
         settings = load_settings()

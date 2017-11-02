@@ -1,10 +1,11 @@
 import os
 import socket
 from contextlib import contextmanager
-from tempfile import TemporaryDirectory
+
 from unittest import TestCase
 
 import pytest
+import six
 from click.testing import CliRunner
 
 
@@ -17,14 +18,26 @@ class BaseTestCase(TestCase):
 
 @contextmanager
 def temp_chdir(cwd=None):
-    with TemporaryDirectory() as d:
-        origin = cwd or os.getcwd()
-        os.chdir(d)
+    if six.PY3:
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as d:
+            origin = cwd or os.getcwd()
+            os.chdir(d)
 
-        try:
-            yield d if os.path.exists(d) else ''
-        finally:
-            os.chdir(origin)
+            try:
+                yield d if os.path.exists(d) else ''
+            finally:
+                os.chdir(origin)
+    else:
+        from tempfile import mkdtemp
+        with mkdtemp() as d:
+            origin=cwd or os.getcwd()
+            os.chdir(d)
+            try:
+                yield d if os.path.exists(d) else ''
+            finally:
+                os.chdir(origin)
+
 
 def connected_to_internet():  # no cov
     if os.environ.get('CI') and os.environ.get('TRAVIS'):

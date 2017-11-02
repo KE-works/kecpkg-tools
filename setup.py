@@ -52,7 +52,7 @@ setup(
         'atomicwrites',
         'jinja2',
         'pykechain',
-        'hatch'
+        #'hatch'
     ),
 
     tests_require=(

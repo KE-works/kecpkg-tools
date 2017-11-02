@@ -5,8 +5,7 @@ CONTEXT_SETTINGS = {
 }
 UNKNOWN_OPTIONS = {
     'ignore_unknown_options': True,
-    **CONTEXT_SETTINGS
-}
+}.update(CONTEXT_SETTINGS)
 
 
 def echo_success(text, nl=True):

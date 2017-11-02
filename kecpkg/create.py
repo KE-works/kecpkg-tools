@@ -3,10 +3,8 @@ import shutil
 import subprocess
 import sys
 
-from hatch.utils import get_proper_python, NEED_SUBPROCESS_SHELL
-
 from kecpkg.files.rendering import render_to_file
-from kecpkg.utils import ensure_dir_exists
+from kecpkg.utils import ensure_dir_exists, get_proper_python, NEED_SUBPROCESS_SHELL
 
 
 def create_package(package_dir, settings):

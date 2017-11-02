@@ -1,8 +1,16 @@
+"""
+This is part of the kecpkg-tools project
+
+Parts are borrowed from hatch Those parts are are released under the MIT license
+"""
+
 import os
+import platform
 import re
 import shutil
 import sys
-from urllib.request import urlopen
+
+import six
 
 from kecpkg.commands.utils import echo_failure, echo_info
 
@@ -36,23 +44,6 @@ def create_file(filepath, content=None, overwrite=True):
         sys.exit(1)
 
 
-def download_file(url, filepath):
-    """
-    Download file from url and save to disk as filename.
-
-    :param url: url to download file from
-    :param filepath: filename to write to
-    """
-    req = urlopen(url)
-    with open(filepath, 'wb') as f:
-        while True:
-            chunk = req.read(16384)
-            if not chunk:
-                break
-            f.write(chunk)
-            f.flush()
-
-
 def copy_path(sourcepath, destpath):
     """
     Copy path.
@@ -61,11 +52,12 @@ def copy_path(sourcepath, destpath):
     :param destpath: destination path to copy to
     """
     if os.path.isdir(sourcepath):
-        shutil.copytree(
-            sourcepath,
-            os.path.join(destpath, basepath(sourcepath)),
-            copy_function=shutil.copy
-        )
+        if six.PY3:
+            shutil.copytree(sourcepath, os.path.join(destpath, basepath(sourcepath)),
+                            copy_function=shutil.copy)
+        else:
+            shutil.copytree(sourcepath, os.path.join(destpath, basepath(sourcepath)))
+
     else:
         shutil.copy(sourcepath, destpath)
 
@@ -110,6 +102,7 @@ def get_package_dir(package_name=None, fail=True):
     :param fail: (optional, default=True) fail hard with exit when no package dir found
     :return: full path name to the package directory
     """
+
     def _inner(d):
         from kecpkg.settings import load_settings
         try:
@@ -180,3 +173,34 @@ def get_artifacts_on_disk(root_path, exclude_paths=('venv', 'dist'), verbose=Fal
     if verbose:
         echo_info('{}'.format(artifacts))
     return artifacts
+
+
+# Python Operation regarding Virtual environments
+
+
+__platform = platform.system()
+ON_MACOS = os.name == 'mac' or __platform == 'Darwin'
+ON_WINDOWS = NEED_SUBPROCESS_SHELL = os.name == 'nt' or __platform == 'Windows'
+VENV_FLAGS = {
+    '_HATCHING_',
+    'VIRTUAL_ENV',
+    'CONDA_PREFIX',
+}
+
+
+def venv_ignored():
+    return os.environ.get('_IGNORE_VENV_') == '1'
+
+
+def venv_active():
+    return bool(VENV_FLAGS & set(os.environ)) and not venv_ignored()
+
+
+def get_proper_python():  # no cov
+    if not venv_active():
+        default_python = os.environ.get('_DEFAULT_PYTHON_', None)
+        if default_python:
+            return default_python
+        elif not ON_WINDOWS:
+            return 'python3'
+    return 'python'
