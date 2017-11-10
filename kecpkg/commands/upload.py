@@ -7,7 +7,7 @@ from pykechain import Client, get_project
 from requests.compat import urljoin
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info, echo_success, echo_failure
-from kecpkg.settings import load_settings
+from kecpkg.settings import load_settings, save_settings
 from kecpkg.utils import get_package_dir, get_package_name
 
 
@@ -20,8 +20,13 @@ from kecpkg.utils import get_package_dir, get_package_name
 @click.option('--token', help="token for KE-chain access")
 @click.option('--scope', help="scope name to upload the kecpkg to")
 @click.option('--scope-id', help="UUID of the scope to upload the kecpkg to", type=click.UUID)
+@click.option('--service-id', help="(optional) id of the service to reupload", type=click.UUID)
+@click.option('--reupload', '--replace', '-r', is_flag=True, default=False,
+              help="(optional) reupload the kecpkg to an already existing service")
 @click.option('--interactive', '-i', is_flag=True, help="interactive mode; guide me through the upload")
-@click.option('--kecpkg', help="(optional) path to the kecpkg file to upload")
+@click.option('--kecpkg', help="(optional) path to the kecpkg file to upload", type=click.File)
+@click.option('--store/--no-store', is_flag=True, default=True,
+              help="(optional) flag to store provided interactive information to settings (except pass)")
 def upload(package=None, url=None, username=None, password=None, token=None, scope=None, scope_id=None, kecpkg=None,
            **options):
     """
@@ -33,8 +38,8 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
     settings = load_settings(package_dir=get_package_dir(package_name))
 
     if not url or not (username and password) or not (token) or not (scope or scope_id) or options.get('interactive'):
-        url = click.prompt('Url (incl http(s)://)', default=url)
-        username = click.prompt('Username', default=username)
+        url = click.prompt('Url (incl http(s)://)', default=settings.get('url') or url)
+        username = click.prompt('Username', default=settings.get('username') or username)
         password = click.prompt('Password', hide_input=True)
 
         client = Client(url)
@@ -55,6 +60,18 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
 
         echo_success("Scope selected: '{scope}' ({scope_id})".format(**scope_match))
         scope_id = scope_match['scope_id']
+
+        if options.get('reupload') and options.get('service_id') or settings.get('service_id'):
+            scope = client.scope(scope_id)
+
+    # store to settings
+    if options.get('store'):
+        settings.update(dict(
+            url=url,
+            username=username,
+            scope_id=str(scope_id)
+        ))
+        save_settings(settings)
 
     # do upload
     build_path = os.path.join(get_package_dir(package_name), settings.get('build_dir'))
@@ -139,6 +156,12 @@ def upload_package(scope, build_path=None, kecpkg_path=None, settings=None):
     )
     echo_success("To view the newly created service, go to: `{}`".format(success_url))
 
+    # update settings
+    settings['service_id'] = str(new_service.id)
+    from datetime import datetime
+    settings['last_upload'] = datetime.isoformat()
+    save_settings(settings)
+
 
 def validate_scopes(scope_guess, scope_matcher):
     """Check the scope guess against a set of possible scopes and return correct scope_id."""
@@ -155,4 +178,5 @@ def validate_scopes(scope_guess, scope_matcher):
     # only return when a single scope is matched
     if len(scope_matches) == 1:
         return scope_matches[0]
+    print('Could not match; be more specific')
     return None

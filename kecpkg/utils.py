@@ -1,5 +1,5 @@
 """
-This is part of the kecpkg-tools project
+Part of the kecpkg-tools project.
 
 Parts are borrowed from hatch Those parts are are released under the MIT license
 """
@@ -102,7 +102,6 @@ def get_package_dir(package_name=None, fail=True):
     :param fail: (optional, default=True) fail hard with exit when no package dir found
     :return: full path name to the package directory
     """
-
     def _inner(d):
         from kecpkg.settings import load_settings
         try:
@@ -189,14 +188,17 @@ VENV_FLAGS = {
 
 
 def venv_ignored():
+    """Check if virtual env is to be ignored."""
     return os.environ.get('_IGNORE_VENV_') == '1'
 
 
 def venv_active():
+    """Check if virtual env is active."""
     return bool(VENV_FLAGS & set(os.environ)) and not venv_ignored()
 
 
 def get_proper_python():  # no cov
+    """Retrieve the proper python version on the platform."""
     if not venv_active():
         default_python = os.environ.get('_DEFAULT_PYTHON_', None)
         if default_python:

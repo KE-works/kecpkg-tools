@@ -27,7 +27,14 @@ def create_package(package_dir, settings):
                                                      entrypoint_script=settings.get('entrypoint_script'),
                                                      entrypoint_func=settings.get('entrypoint_func')),
                    target_dir=package_dir)
-    render_to_file('.gitignore', content={}, target_dir=package_dir)
+    render_to_file('.gitignore', content=dict(), target_dir=package_dir)
+    render_to_file('.env', content=dict(), target_dir=package_dir)
+
+    # runconfigurations
+    run_configurations_path = os.path.join(package_dir, '.idea', 'runConfigurations')
+    ensure_dir_exists(run_configurations_path)
+    render_to_file('Upload_the_kecpkg.xml', content=dict(), target_dir=run_configurations_path)
+    render_to_file('Build_the_kecpkg.xml', content=dict(), target_dir=run_configurations_path)
 
     script_filename = '{}.py'.format(settings.get('entrypoint_script'))
 

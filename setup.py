@@ -51,8 +51,7 @@ setup(
         'click',
         'atomicwrites',
         'jinja2',
-        'pykechain',
-        #'hatch'
+        'pykechain>=1.13',
     ),
 
     tests_require=(
@@ -65,7 +64,8 @@ setup(
 
     # to include the templates in the bdist wheel, we need to add package_data here
     package_data={
-        'kecpkg': ['files/templates/*.template']
+        'kecpkg': ['files/templates/*.template',
+                   'files/templates/.*.template']
     },
 
     entry_points={

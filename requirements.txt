@@ -2,7 +2,7 @@
 click
 atomicwrites
 jinja2
-pykechain
+pykechain>=1.13
 
 
 # testing
