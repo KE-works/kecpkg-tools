@@ -2,9 +2,9 @@ import os
 import sys
 
 import click as click
-import requests
 from pykechain import Client, get_project
-from requests.compat import urljoin
+from pykechain.models import Scope
+from pykechain.models.service import Service
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info, echo_success, echo_failure
 from kecpkg.settings import load_settings, save_settings
@@ -24,7 +24,7 @@ from kecpkg.utils import get_package_dir, get_package_name
 @click.option('--reupload', '--replace', '-r', is_flag=True, default=False,
               help="(optional) reupload the kecpkg to an already existing service")
 @click.option('--interactive', '-i', is_flag=True, help="interactive mode; guide me through the upload")
-@click.option('--kecpkg', help="(optional) path to the kecpkg file to upload", type=click.File)
+@click.option('--kecpkg', help="(optional) path to the kecpkg file to upload", type=click.Path())
 @click.option('--store/--no-store', is_flag=True, default=True,
               help="(optional) flag to store provided interactive information to settings (except pass)")
 def upload(package=None, url=None, username=None, password=None, token=None, scope=None, scope_id=None, kecpkg=None,
@@ -37,13 +37,21 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
     package_name = package or get_package_name() or click.prompt('Package name')
     settings = load_settings(package_dir=get_package_dir(package_name))
 
-    if not url or not (username and password) or not (token) or not (scope or scope_id) or options.get('interactive'):
+    if not options.get('interactive'):
+        url = url or settings.get('url')
+        username = username or settings.get('username')
+        token = token or settings.get('token')
+        scope_id = scope or settings.get('scope')
+    elif not url or not ((username and password) or token):
         url = click.prompt('Url (incl http(s)://)', default=settings.get('url') or url)
         username = click.prompt('Username', default=settings.get('username') or username)
         password = click.prompt('Password', hide_input=True)
 
-        client = Client(url)
-        client.login(username=username, password=password)
+    client = Client(url)
+    client.login(username=username, password=password, token=token)
+
+    # scope finder
+    if not scope_id:
         scopes = client.scopes()
         scope_matcher = [dict(number=i, scope_id=scope.id, scope=scope.name) for i, scope in
                          zip(range(1, len(scopes)), scopes)]
@@ -61,8 +69,12 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
         echo_success("Scope selected: '{scope}' ({scope_id})".format(**scope_match))
         scope_id = scope_match['scope_id']
 
-        if options.get('reupload') and options.get('service_id') or settings.get('service_id'):
-            scope = client.scope(scope_id)
+    scope_to_upload = get_project(url, username, password, token, scope_id=scope_id)
+
+    # service reupload
+    service_id = options.get('service_id') or settings.get('service_id')
+    if options.get('reupload') and not service_id:
+        echo_failure('Please provide a service id to reupload to.')
 
     # store to settings
     if options.get('store'):
@@ -71,6 +83,8 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
             username=username,
             scope_id=str(scope_id)
         ))
+        if service_id:
+            settings['service_id'] = service_id
         save_settings(settings)
 
     # do upload
@@ -78,17 +92,19 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
     if not build_path:
         echo_failure('Cannot find build path, please do build kecpkg first')
         sys.exit(400)
-    scope_to_upload = get_project(url, username, password, token, scope_id=scope_id)
-    upload_package(scope_to_upload, build_path, kecpkg, settings)
+
+    upload_package(scope_to_upload, build_path, kecpkg, service_id=service_id, settings=settings)
 
 
-def upload_package(scope, build_path=None, kecpkg_path=None, settings=None):
+def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, settings=None):
     """
     Upload the package from build_path to the right scope, create a new KE-chain SIM service.
 
-    :param scope: scope object (pykechain)
+    :param scope: Scope object (pykechain)
+    :type scope: Scope
     :param build_path: path to the build directory in which the to-be uploaded script resides
     :param kecpkg_path: path to the kecpkg file to upload (no need to provide build_path)
+    :param service_id: UUID of the service to upload to
     :param settings: settings of the package
     :return: None
     """
@@ -120,44 +136,37 @@ def upload_package(scope, build_path=None, kecpkg_path=None, settings=None):
     # 1. fill service information
     # 2. do upload
 
-    # Create new service in KE-chain
-    payload = dict(
-        name=settings.get('package_name'),
-        description=settings.get('description', ''),
-        script_version=settings.get('version', ''),
-        script_type='PYTHON SCRIPT',
-        env_version=settings.get('python_version'),
-        id='',
-        scope=scope.id
-    )
-
-    create_uri = '/api/services.json'
-    r = scope._client._request('POST', urljoin(scope._client.api_root, create_uri), data=payload)
-    if r.status_code != requests.codes.created:
-        echo_failure('Unexpected response from the server: {}'.format((r, r.text)))
-        sys.exit(r.status_code)
-    response = r.json()
-    new_service = response.get('results')[0]
-
-    # Upload as attachment to new service in KE-chain
-    r = scope._client._request('POST', "{}/{}".format(new_service.get('url'), 'upload.json'),
-                               files={'attachment': (os.path.basename(kecpkg_path), open(kecpkg_path, 'rb'))})
-
-    if r.status_code != requests.codes.accepted:
-        echo_failure('Unexpected response from the server: {}'.format((r, r.text)))
-        sys.exit(r.status_code)
+    if service_id:
+        service = scope.service(pk=service_id)  # type: Service
+        service.upload(kecpkg_path)
+        service.edit(
+            name=settings.get('package_name'),
+            description=settings.get('description', ''),
+            script_version=settings.get('version', '')
+        )
+    else:
+        # Create new service in KE-chain
+        service = scope.create_service(
+            name=settings.get('package_name'),
+            scope=scope.id,
+            description=settings.get('description', ''),
+            version=settings.get('version', ''),
+            service_type='PYTHON SCRIPT',
+            environment_version=settings.get('python_version'),
+            kecpkg_path=kecpkg_path
+        )  # type: Scope
 
     # Wrap up party!
     echo_success("kecpkg `{}` successfully uploaded to KE-chain.".format(os.path.basename(kecpkg_path)))
-    success_url = "{api_root}/#scopes/{scope_id}/scripts/{script_id}".format(
+    success_url = "{api_root}/#scopes/{scope_id}/scripts/{service_id}".format(
         api_root=scope._client.api_root,
         scope_id=scope.id,
-        script_id=new_service.get('id')
+        service_id=service.id
     )
     echo_success("To view the newly created service, go to: `{}`".format(success_url))
 
     # update settings
-    settings['service_id'] = str(new_service.id)
+    settings['service_id'] = str(service.id)
     from datetime import datetime
     settings['last_upload'] = datetime.isoformat()
     save_settings(settings)
