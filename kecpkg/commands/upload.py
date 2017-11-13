@@ -3,8 +3,6 @@ import sys
 
 import click as click
 from pykechain import Client, get_project
-from pykechain.models import Scope
-from pykechain.models.service import Service
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info, echo_success, echo_failure
 from kecpkg.settings import load_settings, save_settings
@@ -101,7 +99,6 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
     Upload the package from build_path to the right scope, create a new KE-chain SIM service.
 
     :param scope: Scope object (pykechain)
-    :type scope: Scope
     :param build_path: path to the build directory in which the to-be uploaded script resides
     :param kecpkg_path: path to the kecpkg file to upload (no need to provide build_path)
     :param service_id: UUID of the service to upload to
@@ -137,7 +134,7 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
     # 2. do upload
 
     if service_id:
-        service = scope.service(pk=service_id)  # type: Service
+        service = scope.service(pk=service_id)
         service.upload(kecpkg_path)
         service.edit(
             name=settings.get('package_name'),
@@ -154,7 +151,7 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
             service_type='PYTHON SCRIPT',
             environment_version=settings.get('python_version'),
             kecpkg_path=kecpkg_path
-        )  # type: Scope
+        )
 
     # Wrap up party!
     echo_success("kecpkg `{}` successfully uploaded to KE-chain.".format(os.path.basename(kecpkg_path)))
@@ -168,7 +165,7 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
     # update settings
     settings['service_id'] = str(service.id)
     from datetime import datetime
-    settings['last_upload'] = datetime.isoformat()
+    settings['last_upload'] = str(datetime.isoformat())
     save_settings(settings)
 
 
