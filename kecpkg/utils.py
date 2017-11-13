@@ -9,6 +9,7 @@ import platform
 import re
 import shutil
 import sys
+from contextlib import contextmanager
 
 import six
 
@@ -175,7 +176,7 @@ def get_artifacts_on_disk(root_path, exclude_paths=('venv', 'dist'), verbose=Fal
 
 
 # Python Operation regarding Virtual environments
-
+# Graceously borrowed From hatch package.
 
 __platform = platform.system()
 ON_MACOS = os.name == 'mac' or __platform == 'Darwin'
@@ -188,17 +189,29 @@ VENV_FLAGS = {
 
 
 def venv_ignored():
-    """Check if virtual env is to be ignored."""
+    """
+    Check if virtual env is to be ignored.
+
+    Graceously borrowed From hatch package.
+    """
     return os.environ.get('_IGNORE_VENV_') == '1'
 
 
 def venv_active():
-    """Check if virtual env is active."""
+    """
+    Check if virtual env is active.
+
+    Graceously borrowed From hatch package.
+    """
     return bool(VENV_FLAGS & set(os.environ)) and not venv_ignored()
 
 
 def get_proper_python():  # no cov
-    """Retrieve the proper python version on the platform."""
+    """
+    Retrieve the proper python version on the platform.
+
+    Graceously borrowed From hatch package.
+    """
     if not venv_active():
         default_python = os.environ.get('_DEFAULT_PYTHON_', None)
         if default_python:
@@ -206,3 +219,89 @@ def get_proper_python():  # no cov
         elif not ON_WINDOWS:
             return 'python3'
     return 'python'
+
+def get_proper_pip():  # no cov
+    """
+    Retrieve the propery pip executable on the platform.
+
+    Graceously borrowed From hatch package.
+    """
+    if not venv_active():
+        default_pip = os.environ.get('_DEFAULT_PIP_', None)
+        if default_pip:
+            return default_pip
+        elif not ON_WINDOWS:
+            return 'pip3'
+    return 'pip'
+
+def locate_exe_dir(d, check=True):
+    """
+    Locate the python or pip executables on the platform.
+
+    Graceously borrowed From hatch package.
+    """
+    exe_dir = os.path.join(d, 'Scripts') if ON_WINDOWS else os.path.join(d, 'bin')
+    if check and not os.path.isdir(exe_dir):
+        raise OSError('Unable to locate python virtual environment executables directory.')
+    return exe_dir
+
+@contextmanager
+def env_vars(evars, ignore=None):
+    """
+    Contextmanager to provide filtering on the environment variables already on the system.
+
+    Graceously borrowed From hatch package.
+
+    :param evars: new environment variables to inject or override
+    :param ignore: ignored environment variables
+    :return: context in which the environment variable dictionary is rewritten
+    """
+    ignore = ignore or {}
+    ignored_evars = {}
+    old_evars = {}
+
+    for ev in evars:
+        if ev in os.environ:
+            old_evars[ev] = os.environ[ev]
+        os.environ[ev] = evars[ev]
+
+    for ev in ignore:
+        if ev in os.environ:  # no cov
+            ignored_evars[ev] = os.environ[ev]
+            os.environ.pop(ev)
+
+    try:
+        yield
+    finally:
+        for ev in evars:
+            if ev in old_evars:
+                os.environ[ev] = old_evars[ev]
+            else:
+                os.environ.pop(ev)
+
+        for ev in ignored_evars:
+            os.environ[ev] = ignored_evars[ev]
+
+@contextmanager
+def venv(venv_path, evars=None):
+    """
+    Operate within the confines of a virtual environment.
+
+
+    Graceously borrowed From hatch package.
+
+    :param venv_path: virtual environment path
+    :param evars: additional environment variables, which will be overwritten
+    :return: context in which the virtual environment directory is set to the venv_path.
+    """
+    venv_exe_dir = locate_exe_dir(venv_path)
+
+    evars = evars or {}
+    evars['_HATCHING_'] = '1'
+    evars['VIRTUAL_ENV'] = venv_path
+    evars['PATH'] = '{}{}{}'.format(
+        venv_exe_dir, os.pathsep, os.environ.get('PATH', '')
+    )
+
+    with env_vars(evars, ignore={'__PYVENV_LAUNCHER__'}):
+        yield venv_exe_dir

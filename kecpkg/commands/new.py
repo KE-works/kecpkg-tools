@@ -4,7 +4,7 @@ import sys
 import click
 
 from kecpkg.commands.utils import echo_failure, CONTEXT_SETTINGS, echo_info, echo_success
-from kecpkg.create import create_package, create_venv
+from kecpkg.create import create_package, create_venv, pip_install_venv
 from kecpkg.settings import load_settings, copy_default_settings, save_settings
 from kecpkg.utils import normalise_name
 
@@ -71,6 +71,7 @@ def new(package=None, **options):
         echo_info("Creating virtual environment")
         create_venv(package_dir, settings, pypath=None, use_global=options.get('global_packages'),
                     verbose=options.get('verbose'))
+        pip_install_venv(package_dir, settings, verbose=options.get('verbose'))
     else:
         settings['venv_dir'] = None
 

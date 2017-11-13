@@ -3,8 +3,9 @@ import shutil
 import subprocess
 import sys
 
+from kecpkg.commands.utils import echo_failure, echo_info
 from kecpkg.files.rendering import render_to_file
-from kecpkg.utils import ensure_dir_exists, get_proper_python, NEED_SUBPROCESS_SHELL
+from kecpkg.utils import ensure_dir_exists, get_proper_python, NEED_SUBPROCESS_SHELL, venv
 
 
 def create_package(package_dir, settings):
@@ -52,7 +53,7 @@ def create_venv(package_dir, settings, pypath=None, use_global=False, verbose=Fa
         +-- ...
 
     :param package_dir: the full path to the package directory
-    :param settings: the settings dict (including the venv_dir name to create the right venv
+    :param settings: the settings dict (including the venv_dir name to create the right venv)
     """
     venv_dir = os.path.join(package_dir, settings.get('venv_dir'))
 
@@ -63,4 +64,36 @@ def create_venv(package_dir, settings, pypath=None, use_global=False, verbose=Fa
     if not verbose:  # no cov
         command.append('-qqq')
     result = subprocess.run(command, shell=NEED_SUBPROCESS_SHELL)
+    return result.returncode
+
+
+def pip_install_venv(package_dir, settings, verbose=False):
+    """
+    install requirements into the virtual environment.
+
+    :param package_dir: the full path to the package directory
+    :param settings: the settings dict (incluing the venv_dir name)
+    :param verbose: (optional) be more verbose if set to True, defaults to False
+    """
+    venv_dir = os.path.join(package_dir, settings.get('venv_dir'))
+    if not os.path.exists(venv_dir):
+        echo_failure('virtual environment directory `{}` does not exists, nothing to install'.format(venv_dir))
+        sys.exit(1)
+
+    if not os.path.exists(os.path.join(package_dir, settings.get('requirements_filename'))):
+        echo_failure('could not find requirements.txt to install, check if `{}` exists or update settings'.format(
+            settings.get('requirements_filename')))
+        sys.exit(1)
+
+    install_command = [sys.executable, '-m', 'pip', 'install', '-r',
+                       os.path.join(package_dir, settings.get('requirements_filename'))]
+
+    if not verbose:  # no cov
+        install_command.append('-qqq')
+
+    with venv(venv_dir):
+        echo_info('Installing requirements from `{}` into the virtual environment `{}`'.
+                  format(settings.get('requirements_filename'), settings.get('venv_dir')))
+        result = subprocess.run(install_command, shell=NEED_SUBPROCESS_SHELL)
+
     return result.returncode

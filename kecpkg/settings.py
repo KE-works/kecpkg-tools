@@ -17,7 +17,8 @@ DEFAULT_SETTINGS = OrderedDict([
     ('venv_dir', 'venv'),
     ('entrypoint_script', 'script'),
     ('entrypoint_func', 'main'),
-    ('build_dir', 'dist')
+    ('build_dir', 'dist'),
+    ('requirements_filename', 'requirements.txt')
 ])
 
 
