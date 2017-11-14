@@ -37,7 +37,7 @@ def create_file(filepath, content=None, overwrite=True):
 
     if not os.path.exists(filepath) or (os.path.exists(filepath) and overwrite):
         with open(filepath, 'w') as fd:
-            os.utime(filepath, times=None)
+            # os.utime(filepath, times=None)
             if content:
                 fd.write(content)
     else:
@@ -71,10 +71,10 @@ def remove_path(path):
     """
     try:
         shutil.rmtree(path)
-    except (FileNotFoundError, OSError):
+    except (IOError, OSError):
         try:
             os.remove(path)
-        except (FileNotFoundError, PermissionError):
+        except (IOError):
             pass
 
 
@@ -109,7 +109,7 @@ def get_package_dir(package_name=None, fail=True):
             # load settings just to test that we are inside a package dir
             load_settings(package_dir=d)
             return d
-        except FileNotFoundError:
+        except IOError:
             if os.path.exists(os.path.join(d, 'package_info.json')):
                 return d
             else:
@@ -220,6 +220,7 @@ def get_proper_python():  # no cov
             return 'python3'
     return 'python'
 
+
 def get_proper_pip():  # no cov
     """
     Retrieve the propery pip executable on the platform.
@@ -234,6 +235,7 @@ def get_proper_pip():  # no cov
             return 'pip3'
     return 'pip'
 
+
 def locate_exe_dir(d, check=True):
     """
     Locate the python or pip executables on the platform.
@@ -244,6 +246,7 @@ def locate_exe_dir(d, check=True):
     if check and not os.path.isdir(exe_dir):
         raise OSError('Unable to locate python virtual environment executables directory.')
     return exe_dir
+
 
 @contextmanager
 def env_vars(evars, ignore=None):
@@ -282,11 +285,11 @@ def env_vars(evars, ignore=None):
         for ev in ignored_evars:
             os.environ[ev] = ignored_evars[ev]
 
+
 @contextmanager
 def venv(venv_path, evars=None):
     """
     Operate within the confines of a virtual environment.
-
 
     Graceously borrowed From hatch package.
 

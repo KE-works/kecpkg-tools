@@ -34,7 +34,7 @@ def new(package=None, **options):
     """
     try:
         settings = load_settings()
-    except FileNotFoundError:
+    except IOError:
         settings = copy_default_settings()
     package_root_dir = os.getcwd()
 

@@ -40,6 +40,8 @@ class TestCommandNew(BaseTestCase):
             runner = CliRunner()
             result = runner.invoke(kecpkg, ['new', pkgname])
 
+            e = result.exception
+
             self.assertEqual(result.exit_code, 0)
 
             self.assertTrue(os.path.exists(os.path.join(d, pkgname, 'venv')))
@@ -59,7 +61,7 @@ class TestCommandNew(BaseTestCase):
 
     def test_new_non_interactive_with_alternate_venv_name(self):
         pkgname = 'new_pkg'
-        venv_name = '_some_venv'
+        venv_name = '_v'
 
         with temp_chdir() as d:
             runner = CliRunner()

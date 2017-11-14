@@ -3,7 +3,9 @@ import shutil
 import subprocess
 import sys
 
-from kecpkg.commands.utils import echo_failure, echo_info
+import six
+
+from kecpkg.commands.utils import echo_failure, echo_info, echo_success
 from kecpkg.files.rendering import render_to_file
 from kecpkg.utils import ensure_dir_exists, get_proper_python, NEED_SUBPROCESS_SHELL, venv
 
@@ -57,19 +59,27 @@ def create_venv(package_dir, settings, pypath=None, use_global=False, verbose=Fa
     """
     venv_dir = os.path.join(package_dir, settings.get('venv_dir'))
 
-    command = [sys.executable, '-m', 'virtualenv', venv_dir,
-               '-p', pypath or shutil.which(get_proper_python())]
+    if not pypath:
+        from distutils.spawn import find_executable
+        pypath = find_executable(get_proper_python())
+
+    command = [sys.executable, '-m', 'virtualenv', venv_dir, '-p', pypath]
     if use_global:  # no cov
         command.append('--system-site-packages')
     if not verbose:  # no cov
         command.append('-qqq')
-    result = subprocess.run(command, shell=NEED_SUBPROCESS_SHELL)
-    return result.returncode
+    if six.PY3:
+        result = subprocess.run(command, shell=NEED_SUBPROCESS_SHELL)
+        return result.returncode
+    elif six.PY2:
+        result = subprocess.check_output(command, shell=NEED_SUBPROCESS_SHELL)
+        return result and 0 or -1
+
 
 
 def pip_install_venv(package_dir, settings, verbose=False):
     """
-    install requirements into the virtual environment.
+    Install requirements into the virtual environment.
 
     :param package_dir: the full path to the package directory
     :param settings: the settings dict (incluing the venv_dir name)
@@ -95,5 +105,8 @@ def pip_install_venv(package_dir, settings, verbose=False):
         echo_info('Installing requirements from `{}` into the virtual environment `{}`'.
                   format(settings.get('requirements_filename'), settings.get('venv_dir')))
         result = subprocess.run(install_command, shell=NEED_SUBPROCESS_SHELL)
+
+    if result:
+        echo_success(str(result))
 
     return result.returncode

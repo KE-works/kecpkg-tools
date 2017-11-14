@@ -20,23 +20,23 @@ class BaseTestCase(TestCase):
 def temp_chdir(cwd=None):
     if six.PY3:
         from tempfile import TemporaryDirectory
-        with TemporaryDirectory() as d:
+        with TemporaryDirectory() as tempwd:
             origin = cwd or os.getcwd()
-            os.chdir(d)
+            os.chdir(tempwd)
 
             try:
-                yield d if os.path.exists(d) else ''
+                yield tempwd if os.path.exists(tempwd) else ''
             finally:
                 os.chdir(origin)
     else:
         from tempfile import mkdtemp
-        with mkdtemp() as d:
-            origin=cwd or os.getcwd()
-            os.chdir(d)
-            try:
-                yield d if os.path.exists(d) else ''
-            finally:
-                os.chdir(origin)
+        tempwd = mkdtemp()
+        origin=cwd or os.getcwd()
+        os.chdir(tempwd)
+        try:
+            yield tempwd if os.path.exists(tempwd) else ''
+        finally:
+            os.chdir(origin)
 
 
 def connected_to_internet():  # no cov
