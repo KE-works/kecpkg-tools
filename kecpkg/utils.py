@@ -3,7 +3,7 @@ Part of the kecpkg-tools project.
 
 Parts are borrowed from hatch Those parts are are released under the MIT license
 """
-
+import fnmatch
 import os
 import platform
 import re
@@ -13,7 +13,7 @@ from contextlib import contextmanager
 
 import six
 
-from kecpkg.commands.utils import echo_failure, echo_info
+from kecpkg.commands.utils import echo_failure, echo_info, echo_warning
 
 
 def ensure_dir_exists(d):
@@ -144,7 +144,7 @@ def get_package_name():
         return None
 
 
-def get_artifacts_on_disk(root_path, exclude_paths=('venv', 'dist'), verbose=False):
+def get_artifacts_on_disk(root_path, exclude_paths=None, verbose=False):
     """
     Retrieve all artifacts on disk.
 
@@ -152,24 +152,31 @@ def get_artifacts_on_disk(root_path, exclude_paths=('venv', 'dist'), verbose=Fal
     :param exclude_paths: (optional) directory names and filenames to exclude
     :return: dictionary with {'property_id': ['attachment_path1', ...], ...}
     """
+    from kecpkg.settings import EXCLUDE_IN_BUILD
+    exclude_paths = exclude_paths or EXCLUDE_IN_BUILD
     if not os.path.exists(root_path):
         echo_failure("The root path: '{}' does not exist".format(root_path))
         sys.exit(1)
 
     # getting all attachments
     artifacts = []
-    for root, dirs, filenames in os.walk(root_path):
-        # remove the excluded paths
+    for root, dirs, filenames in os.walk(root_path, topdown=True):
         for exclude_path in exclude_paths:
             if exclude_path in dirs:
                 dirs.remove(exclude_path)
 
         for filename in filenames:
-            full_artifact_subpath = '{}{}{}'.format(root, os.path.sep, filename). \
-                replace('{}{}'.format(root_path, os.path.sep), '')
-            artifacts.append(full_artifact_subpath)
-            if verbose:
-                echo_info('Found `{}`'.format(full_artifact_subpath))
+            # print([(filename,ptrn,fnmatch.fnmatch(filename, ptrn)) for ptrn in exclude_paths])
+            if not any([fnmatch.fnmatch(filename, ptrn) for ptrn in exclude_paths]):
+                full_artifact_subpath = '{}{}{}'.format(root, os.path.sep, filename). \
+                    replace('{}{}'.format(root_path, os.path.sep), '')
+                artifacts.append(full_artifact_subpath)
+                if verbose:
+                    echo_info('Found `{}`'.format(full_artifact_subpath))
+            else:
+                if verbose:
+                    echo_warning('Ignored `{}`'.format(filename))
+
     if verbose:
         echo_info('{}'.format(artifacts))
     return artifacts

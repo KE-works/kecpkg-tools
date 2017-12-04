@@ -35,20 +35,24 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
     package_name = package or get_package_name() or click.prompt('Package name')
     settings = load_settings(package_dir=get_package_dir(package_name))
 
-    if not options.get('interactive'):
-        url = url or settings.get('url')
-        username = username or settings.get('username')
-        token = token or settings.get('token')
-        scope_id = scope or settings.get('scope')
-    elif not url or not ((username and password) or token):
+
+    if not url or not ((username and password) or token):
         url = click.prompt('Url (incl http(s)://)', default=settings.get('url') or url)
         username = click.prompt('Username', default=settings.get('username') or username)
         password = click.prompt('Password', hide_input=True)
+    elif not options.get('interactive'):
+        url = url or settings.get('url')
+        username = username or settings.get('username')
+        token = token or settings.get('token')
+        scope_id = scope or settings.get('scope_id')
 
     client = Client(url)
     client.login(username=username, password=password, token=token)
 
     # scope finder
+    if settings.get('scope_id') and click.confirm("Do you wish to use the stored `scope_id` in settings: `{}`".format(settings.get('scope_id')), default=True):
+        scope_id = settings.get('scope_id')
+
     if not scope_id:
         scopes = client.scopes()
         scope_matcher = [dict(number=i, scope_id=scope.id, scope=scope.name) for i, scope in
@@ -145,12 +149,11 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
         # Create new service in KE-chain
         service = scope.create_service(
             name=settings.get('package_name'),
-            scope=scope.id,
             description=settings.get('description', ''),
             version=settings.get('version', ''),
             service_type='PYTHON SCRIPT',
             environment_version=settings.get('python_version'),
-            kecpkg_path=kecpkg_path
+            pkg_path=kecpkg_path
         )
 
     # Wrap up party!
