@@ -1,5 +1,4 @@
 import os
-import shutil
 import subprocess
 import sys
 
@@ -74,7 +73,6 @@ def create_venv(package_dir, settings, pypath=None, use_global=False, verbose=Fa
     elif six.PY2:
         result = subprocess.check_output(command, shell=NEED_SUBPROCESS_SHELL)
         return result and 0 or -1
-
 
 
 def pip_install_venv(package_dir, settings, verbose=False):
