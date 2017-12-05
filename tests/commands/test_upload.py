@@ -42,7 +42,7 @@ class TestCommandUpload(BaseTestCase):
 
             # teardown the just uploaded service
             from kecpkg.settings import load_settings
-            settings = load_settings()
+            settings = load_settings(package_dir=get_package_dir(pkgname))
 
             from pykechain import get_project
             scope = get_project(

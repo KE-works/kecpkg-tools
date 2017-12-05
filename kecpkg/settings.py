@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from atomicwrites import atomic_write
 
-from kecpkg.utils import ensure_dir_exists, create_file
+from kecpkg.utils import ensure_dir_exists, create_file, get_package_dir
 
 SETTINGS_FILENAME = '.kecpkg_settings.json'
 SETTINGS_FILE = os.path.join(os.getcwd(), SETTINGS_FILENAME)
@@ -76,6 +76,8 @@ def save_settings(settings, package_dir=None):
     :param package_dir: (optional) package_dir to save to
     :return: None
     """
+    if settings.get('package_name') and not package_dir:
+        package_dir = get_package_dir(settings.get('package_name'))
     settings_filepath = get_settings_filepath(package_dir)
 
     ensure_dir_exists(os.path.dirname(settings_filepath))

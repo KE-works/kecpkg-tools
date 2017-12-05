@@ -1,5 +1,6 @@
-import click
 import os
+
+import click
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info, echo_success
 from kecpkg.settings import load_settings
@@ -12,6 +13,7 @@ from kecpkg.utils import get_package_dir
 @click.option('--interactive', '-i', is_flag=True, help="interactive mode; guide me through the upload")
 @click.option('--verbose', '-v', is_flag=True, help="be more verbose (print settings)")
 def config(package, **options):
+    """Manage the configuration (or settings) of the package."""
     echo_info('Locating package ``'.format(package))
     package_dir = get_package_dir(package_name=package)
     package_name = os.path.basename(package_dir)
@@ -19,7 +21,7 @@ def config(package, **options):
     settings = load_settings(package_dir=package_dir)
 
     if options.get('verbose'):
-        for k,v in settings.items():
+        for k, v in settings.items():
             echo_info("  {}: '{}'".format(k, v))
 
     if not options.get('interactive'):

@@ -9,6 +9,7 @@ include .coveragerc
 graft tests
 graft kecpkg
 prune .idea
+prune .env*
 recursive-include kecpkg *.template
 
 global-exclude *.pyc

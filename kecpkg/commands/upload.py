@@ -80,7 +80,8 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
     if options.get('reupload') and not service_id:
         echo_failure('Please provide a service id to reupload to.')
     elif service_id and not options.get('reupload') and options.get('interactive'):
-        if click.confirm("Do you wish to *replace* the previously uploaded service: `{}`".format(service_id), default=True):
+        if click.confirm("Do you wish to *replace* the previously uploaded service: `{}`".format(service_id),
+                         default=True):
             service_id = service_id
         else:
             service_id = None
@@ -94,7 +95,7 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
         ))
         if service_id:
             settings['service_id'] = service_id
-        save_settings(settings, package_dir=get_package_dir(package_name))
+        save_settings(settings)
 
     # do upload
     build_path = os.path.join(get_package_dir(package_name), settings.get('build_dir'))

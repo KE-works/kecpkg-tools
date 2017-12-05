@@ -40,6 +40,6 @@ def build_package(package_dir, build_path, settings, verbose=False):
                                                settings.get('python_version'))
     echo_info('Creating package name `{}`'.format(dist_filename))
 
-    with ZipFile(os.path.join(build_path, dist_filename), 'x') as dist_zip:
+    with ZipFile(os.path.join(build_path, dist_filename), 'w') as dist_zip:
         for artifact in artifacts:
             dist_zip.write(os.path.join(package_dir, artifact), arcname=artifact)

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
@@ -102,7 +104,13 @@ def pip_install_venv(package_dir, settings, verbose=False):
     with venv(venv_dir):
         echo_info('Installing requirements from `{}` into the virtual environment `{}`'.
                   format(settings.get('requirements_filename'), settings.get('venv_dir')))
-        result = subprocess.run(install_command, shell=NEED_SUBPROCESS_SHELL)
+        result = None
+        if six.PY3:
+            result = subprocess.run(install_command, shell=NEED_SUBPROCESS_SHELL)
+            return result.returncode
+        elif six.PY2:
+            result = subprocess.check_output(install_command, shell=NEED_SUBPROCESS_SHELL)
+            return result and 0 or -1
 
     if result:
         echo_success(str(result))
