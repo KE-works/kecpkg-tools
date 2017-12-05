@@ -46,7 +46,6 @@ class TestCommandNew(BaseTestCase):
 
             self.assertTrue(os.path.exists(os.path.join(d, pkgname, 'venv')))
             self.assertTrue(os.path.exists(os.path.join(d, pkgname, 'venv', 'bin', 'activate')))
-            self.assertTrue(os.path.exists(os.path.join(d, pkgname, 'venv', 'pip-selfcheck.json')))
 
     def test_new_non_iteractive_with_alternate_script(self):
         pkgname = 'new_pkg'
@@ -71,4 +70,3 @@ class TestCommandNew(BaseTestCase):
 
             self.assertTrue(os.path.exists(os.path.join(d, pkgname, venv_name)))
             self.assertTrue(os.path.exists(os.path.join(d, pkgname, venv_name, 'bin', 'activate')))
-            self.assertTrue(os.path.exists(os.path.join(d, pkgname, venv_name, 'pip-selfcheck.json')))
