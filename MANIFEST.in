@@ -1,6 +1,7 @@
 include README.rst
 include LICENSE
 include CONTRIBUTED
+include CHANGELOG.md
 include requirements.txt
 include tox.ini
 include pyproject.toml
