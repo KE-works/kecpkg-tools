@@ -57,7 +57,8 @@ setup(
     tests_require=(
         'coverage',
         'pytest',
-        'flake8'
+        'flake8',
+        'virtualenv'
     ),
 
     packages=find_packages(exclude=['tests']),
