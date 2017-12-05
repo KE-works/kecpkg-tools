@@ -70,7 +70,7 @@ def get_settings_filepath(package_dir=None):
 
 def save_settings(settings, package_dir=None):
     """
-    Save settings in path (either global, otherwise in the package).
+    Save settings in path (in the package).
 
     :param settings: settings to save
     :param package_dir: (optional) package_dir to save to

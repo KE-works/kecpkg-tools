@@ -8,7 +8,7 @@ from tests.utils import temp_chdir, BaseTestCase
 
 
 class TestCommandPurge(BaseTestCase):
-    def test_new_non_interactive(self):
+    def test_purge_non_interactive(self):
         pkgname = 'new_pkg'
 
         with temp_chdir() as d:

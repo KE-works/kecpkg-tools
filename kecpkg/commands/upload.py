@@ -17,8 +17,8 @@ from kecpkg.utils import get_package_dir, get_package_name
 @click.option('--password', '-p', help="password for KE-chain")
 @click.option('--token', help="token for KE-chain access")
 @click.option('--scope', help="scope name to upload the kecpkg to")
-@click.option('--scope-id', help="UUID of the scope to upload the kecpkg to", type=click.UUID)
-@click.option('--service-id', help="(optional) id of the service to reupload", type=click.UUID)
+@click.option('--scope-id', 'scope_id', help="UUID of the scope to upload the kecpkg to", type=click.UUID)
+@click.option('--service-id', 'service_id', help="(optional) id of the service to reupload", type=click.UUID)
 @click.option('--reupload', '--replace', '-r', is_flag=True, default=False,
               help="(optional) reupload the kecpkg to an already existing service")
 @click.option('--interactive', '-i', is_flag=True, help="interactive mode; guide me through the upload")
@@ -35,22 +35,24 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
     package_name = package or get_package_name() or click.prompt('Package name')
     settings = load_settings(package_dir=get_package_dir(package_name))
 
-
     if not url or not ((username and password) or token):
         url = click.prompt('Url (incl http(s)://)', default=settings.get('url') or url)
         username = click.prompt('Username', default=settings.get('username') or username)
         password = click.prompt('Password', hide_input=True)
+        # set the interactive world to True for continuation sake
+        options['interactive'] = True
     elif not options.get('interactive'):
         url = url or settings.get('url')
         username = username or settings.get('username')
         token = token or settings.get('token')
-        scope_id = scope or settings.get('scope_id')
+        scope_id = scope_id or settings.get('scope_id')
 
     client = Client(url)
     client.login(username=username, password=password, token=token)
 
     # scope finder
-    if settings.get('scope_id') and click.confirm("Do you wish to use the stored `scope_id` in settings: `{}`".format(settings.get('scope_id')), default=True):
+    if settings.get('scope_id') and click.confirm("Do you wish to use the stored `scope_id` "
+                                                  "in settings: `{}`".format(settings.get('scope_id')), default=True):
         scope_id = settings.get('scope_id')
 
     if not scope_id:
@@ -77,6 +79,11 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
     service_id = options.get('service_id') or settings.get('service_id')
     if options.get('reupload') and not service_id:
         echo_failure('Please provide a service id to reupload to.')
+    elif service_id and not options.get('reupload') and options.get('interactive'):
+        if click.confirm("Do you wish to *replace* the previously uploaded service: `{}`".format(service_id), default=True):
+            service_id = service_id
+        else:
+            service_id = None
 
     # store to settings
     if options.get('store'):
@@ -87,7 +94,7 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
         ))
         if service_id:
             settings['service_id'] = service_id
-        save_settings(settings)
+        save_settings(settings, package_dir=get_package_dir(package_name))
 
     # do upload
     build_path = os.path.join(get_package_dir(package_name), settings.get('build_dir'))
@@ -168,7 +175,7 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
     # update settings
     settings['service_id'] = str(service.id)
     from datetime import datetime
-    settings['last_upload'] = str(datetime.isoformat())
+    settings['last_upload'] = str(datetime.now().isoformat())
     save_settings(settings)
 
 
