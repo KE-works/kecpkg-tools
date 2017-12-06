@@ -5,6 +5,7 @@ from copy import deepcopy
 
 from atomicwrites import atomic_write
 
+from kecpkg.commands.utils import echo_failure
 from kecpkg.utils import ensure_dir_exists, create_file, get_package_dir
 
 SETTINGS_FILENAME = '.kecpkg_settings.json'
@@ -51,6 +52,8 @@ def load_settings(lazy=False, package_dir=None):
     settings_filepath = get_settings_filepath(package_dir)
     if lazy and not os.path.exists(settings_filepath):
         return {}
+    elif not os.path.exists(settings_filepath):
+        echo_failure('Could not find a settingsfile in path: {}'.format(settings_filepath))
     with open(settings_filepath, 'r') as f:
         return json.loads(f.read(), object_pairs_hook=OrderedDict)
 

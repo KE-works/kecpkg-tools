@@ -53,7 +53,7 @@ def new(package=None, **options):
     if not package:
         settings['version'] = click.prompt('Version', default=settings.get('version', '0.0.1'))
         settings['description'] = click.prompt('Description', default='')
-        settings['name'] = click.prompt('Author', default=settings.get('name', ''))
+        settings['name'] = click.prompt('Author', default=settings.get('name', os.environ.get('USER', '')))
         settings['email'] = click.prompt('Author\'s email', default=settings.get('email', ''))
         settings['python_version'] = click.prompt('Python version (choose from: {})'.format(settings.get('pyversions')),
                                                   default='3.5')
