@@ -24,8 +24,8 @@ DEFAULT_SETTINGS = OrderedDict([
 ])
 
 EXCLUDE_DIRS_IN_BUILD = (
-    'venv', 'dist', '.idea', '.tox', '.cache', 'venv*', '.env', '__pycache__', 'develop-eggs', 'downloads', 'eggs',
-    'lib', 'lib64', 'sdist', 'wheels', '.hypothesis', '.ipynb_checkpoints', '.mypy_cache'
+    'venv', 'dist', '.idea', '.tox', '.cache', '.git', 'venv*', '.env', '__pycache__', 'develop-eggs', 'downloads',
+    'eggs', 'lib', 'lib64', 'sdist', 'wheels', '.hypothesis', '.ipynb_checkpoints', '.mypy_cache'
 )
 
 EXCLUDE_PATHS_IN_BUILD = (
