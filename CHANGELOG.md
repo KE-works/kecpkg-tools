@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.1 (6DEC17)
+ * removed the '.git' directory from the packaged kecpkg
+
 ## 0.7.0 (6DEC17)
  * The `config` command is now more robust. Added options `--init` to initialise a new settingsfile and added option `--interactive` to walk throug the current settings file and be able to redefine settings.
  * Also the loading of the settings is now more robust and does not fail when a settings file is not found
