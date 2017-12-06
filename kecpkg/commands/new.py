@@ -32,9 +32,8 @@ def new(package=None, **options):
     +-- .gitignore
     +-- .kecpkg-settings.json
     """
-    try:
-        settings = load_settings()
-    except IOError:
+    settings = load_settings(lazy=True)
+    if not settings:
         settings = copy_default_settings()
     package_root_dir = os.getcwd()
 

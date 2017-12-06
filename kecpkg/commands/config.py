@@ -3,8 +3,8 @@ import os
 import click
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info, echo_success
-from kecpkg.settings import load_settings, copy_default_settings, save_settings
-from kecpkg.utils import get_package_dir
+from kecpkg.settings import load_settings, copy_default_settings, save_settings, SETTINGS_FILENAME
+from kecpkg.utils import get_package_dir, copy_path
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,
@@ -21,6 +21,11 @@ def config(package, **options):
     echo_info('Package `{}` has been selected'.format(package_name))
 
     if options.get('init'):
+        if os.path.exists(os.path.join(package_dir, SETTINGS_FILENAME)) and \
+            click.confirm('Are you sure you want to overwrite the current settingsfile (old settings will be a backup)?'):
+            copy_path(os.path.join(package_dir,SETTINGS_FILENAME),
+                      os.path.join(package_dir, "{}-backup".format(SETTINGS_FILENAME)))
+        echo_info('Creating new settingsfile')
         settings = copy_default_settings()
         settings['package_name'] = package_name
         save_settings(settings, package_dir=package_dir)

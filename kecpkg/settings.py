@@ -3,6 +3,7 @@ import os
 from collections import OrderedDict
 from copy import deepcopy
 
+import sys
 from atomicwrites import atomic_write
 
 from kecpkg.commands.utils import echo_failure
@@ -54,8 +55,10 @@ def load_settings(lazy=False, package_dir=None):
         return {}
     elif not os.path.exists(settings_filepath):
         echo_failure('Could not find a settingsfile in path: {}'.format(settings_filepath))
-    with open(settings_filepath, 'r') as f:
-        return json.loads(f.read(), object_pairs_hook=OrderedDict)
+        sys.exit(404)
+    else:
+        with open(settings_filepath, 'r') as f:
+            return json.loads(f.read(), object_pairs_hook=OrderedDict)
 
 
 def get_settings_filepath(package_dir=None):

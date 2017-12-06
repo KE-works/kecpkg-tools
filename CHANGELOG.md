@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0 (6DEC17)
+ * The `config` command is now more robust. Added options `--init` to initialise a new settingsfile and added option `--interactive` to walk throug the current settings file and be able to redefine settings.
+ * Also the loading of the settings is now more robust and does not fail when a settings file is not found
+
 ## 0.6.1 (6DEC17)
  * The `upload` command now properly checks if an build is made in the build directory and gives a proper warning
 

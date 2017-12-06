@@ -103,17 +103,14 @@ def get_package_dir(package_name=None, fail=True):
     :param fail: (optional, default=True) fail hard with exit when no package dir found
     :return: full path name to the package directory
     """
+    from kecpkg.settings import SETTINGS_FILENAME
     def _inner(d):
-        from kecpkg.settings import load_settings
-        try:
-            # load settings just to test that we are inside a package dir
-            load_settings(package_dir=d)
+        if os.path.exists(os.path.join(d, SETTINGS_FILENAME)):
             return d
-        except IOError:
-            if os.path.exists(os.path.join(d, 'package_info.json')):
-                return d
-            else:
-                return None
+        elif os.path.exists(os.path.join(d, 'package_info.json')):
+            return d
+        else:
+            return None
 
     package_dir = _inner(os.getcwd())
     if not package_dir:
@@ -121,7 +118,6 @@ def get_package_dir(package_name=None, fail=True):
     if not package_dir:
         package_dir = _inner(package_name)
     if not package_dir:
-        from kecpkg.settings import SETTINGS_FILENAME
         echo_failure('This does not seem to be a package in path `{}` - please check that there is a '
                      '`package_info.json` or a `{}`'.format(package_dir, SETTINGS_FILENAME))
         if fail:
