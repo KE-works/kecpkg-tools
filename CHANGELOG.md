@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.6.1 (6DEC17)
+ * The `upload` command now properly checks if an build is made in the build directory and gives a proper warning
 
 ## 0.6.0 (5DEC17)
 
@@ -20,4 +22,3 @@
 
 Third prerelease.
  * The following commands are functional: `new`, `build`, `upload`.
- 

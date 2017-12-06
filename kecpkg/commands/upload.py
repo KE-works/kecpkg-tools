@@ -99,8 +99,8 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
 
     # do upload
     build_path = os.path.join(get_package_dir(package_name), settings.get('build_dir'))
-    if not build_path:
-        echo_failure('Cannot find build path, please do build kecpkg first')
+    if not os.path.exists(build_path):
+        echo_failure('Cannot find build path, please do `kecpkg build` first')
         sys.exit(400)
 
     upload_package(scope_to_upload, build_path, kecpkg, service_id=service_id, settings=settings)
@@ -123,6 +123,7 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
     if kecpkg_path and os.path.exists(kecpkg_path):
         kecpkg_path = kecpkg_path
     else:
+
         built_kecpkgs = os.listdir(build_path)
         if not kecpkg_path and len(built_kecpkgs) > 1 and settings.get('version'):
             built_kecpkgs = [f for f in built_kecpkgs if settings.get('version') in f]
