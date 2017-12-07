@@ -116,6 +116,7 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
     :param kecpkg_path: path to the kecpkg file to upload (no need to provide build_path)
     :param service_id: UUID of the service to upload to
     :param settings: settings of the package
+    :param store_settings: store the settings after update (eg service_id after upload)
     :return: None
     """
     # if not (kecpkg_path and not build_path) or not (build_path and not kecpkg_path):
