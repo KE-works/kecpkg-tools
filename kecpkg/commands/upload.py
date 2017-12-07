@@ -94,7 +94,7 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
             scope_id=str(scope_id)
         ))
         if service_id:
-            settings['service_id'] = service_id
+            settings['service_id'] = str(service_id)
         save_settings(settings)
 
     # do upload
