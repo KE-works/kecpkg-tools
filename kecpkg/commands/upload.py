@@ -51,7 +51,7 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
     client.login(username=username, password=password, token=token)
 
     # scope finder
-    if settings.get('scope_id') and click.confirm("Do you wish to use the stored `scope_id` "
+    if not scope_id and settings.get('scope_id') and click.confirm("Do you wish to use the stored `scope_id` "
                                                   "in settings: `{}`".format(settings.get('scope_id')), default=True):
         scope_id = settings.get('scope_id')
 
@@ -103,10 +103,11 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
         echo_failure('Cannot find build path, please do `kecpkg build` first')
         sys.exit(400)
 
-    upload_package(scope_to_upload, build_path, kecpkg, service_id=service_id, settings=settings)
+    upload_package(scope_to_upload, build_path, kecpkg, service_id=service_id, settings=settings,
+                   store_settings=options.get('store'))
 
 
-def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, settings=None):
+def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, settings=None, store_settings=True):
     """
     Upload the package from build_path to the right scope, create a new KE-chain SIM service.
 
@@ -175,10 +176,11 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
     echo_success("To view the newly created service, go to: `{}`".format(success_url))
 
     # update settings
-    settings['service_id'] = str(service.id)
-    from datetime import datetime
-    settings['last_upload'] = str(datetime.now().isoformat())
-    save_settings(settings)
+    if store_settings:
+        settings['service_id'] = str(service.id)
+        from datetime import datetime
+        settings['last_upload'] = str(datetime.now().isoformat())
+        save_settings(settings)
 
 
 def validate_scopes(scope_guess, scope_matcher):
