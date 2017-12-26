@@ -141,7 +141,7 @@ def get_package_name():
         return None
 
 
-def get_artifacts_on_disk(root_path, exclude_paths=None, verbose=False):
+def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_exclude_paths=None, verbose=False):
     """
     Retrieve all artifacts on disk.
 
@@ -150,7 +150,12 @@ def get_artifacts_on_disk(root_path, exclude_paths=None, verbose=False):
     :return: dictionary with {'property_id': ['attachment_path1', ...], ...}
     """
     from kecpkg.settings import EXCLUDE_IN_BUILD
-    exclude_paths = exclude_paths or EXCLUDE_IN_BUILD
+    exclude_paths = default_exclude_paths or EXCLUDE_IN_BUILD
+
+    # get additional exclude paths from the settings file
+    if additional_exclude_paths and isinstance(additional_exclude_paths, list):
+        exclude_paths.extend(additional_exclude_paths)
+
     if not os.path.exists(root_path):
         echo_failure("The root path: '{}' does not exist".format(root_path))
         sys.exit(1)
