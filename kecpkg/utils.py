@@ -104,6 +104,7 @@ def get_package_dir(package_name=None, fail=True):
     :return: full path name to the package directory
     """
     from kecpkg.settings import SETTINGS_FILENAME
+
     def _inner(d):
         if os.path.exists(os.path.join(d, SETTINGS_FILENAME)):
             return d

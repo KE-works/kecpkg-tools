@@ -22,8 +22,9 @@ def config(package, **options):
 
     if options.get('init'):
         if os.path.exists(os.path.join(package_dir, SETTINGS_FILENAME)) and \
-            click.confirm('Are you sure you want to overwrite the current settingsfile (old settings will be a backup)?'):
-            copy_path(os.path.join(package_dir,SETTINGS_FILENAME),
+                click.confirm('Are you sure you want to overwrite the current settingsfile '
+                              '(old settings will be a backup)?'):
+            copy_path(os.path.join(package_dir, SETTINGS_FILENAME),
                       os.path.join(package_dir, "{}-backup".format(SETTINGS_FILENAME)))
         echo_info('Creating new settingsfile')
         settings = copy_default_settings()
@@ -36,8 +37,8 @@ def config(package, **options):
         settings['description'] = click.prompt('Description', default=settings.get('description', ''))
         settings['name'] = click.prompt('Author', default=settings.get('name', os.environ.get('USER', '')))
         settings['email'] = click.prompt('Author\'s email', default=settings.get('email', ''))
-        settings['python_version'] = click.prompt('Python version (choose from: {})'.format(settings.get('pyversions')),
-                                                  default='3.5')
+        settings['python_version'] = click.prompt('Python version (choose from: {})'.
+                                                  format(settings.get('pyversions')), default='3.5')
         save_settings(settings, package_dir=package_dir)
 
     if options.get('verbose'):
