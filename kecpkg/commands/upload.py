@@ -52,8 +52,8 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
 
     # scope finder
     if not scope_id and settings.get('scope_id') and \
-            click.confirm("Do you wish to use the stored `scope_id` in settings: `{}`".
-                                  format(settings.get('scope_id')), default=True):
+            click.confirm("Do you wish to use the stored `scope_id` in settings: `{}`".format(
+                settings.get('scope_id')), default=True):
         scope_id = settings.get('scope_id')
 
     if not scope_id:
