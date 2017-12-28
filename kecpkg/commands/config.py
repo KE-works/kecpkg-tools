@@ -14,7 +14,7 @@ from kecpkg.utils import get_package_dir, copy_path
 @click.option('--interactive', '-i', is_flag=True, help="interactive mode; guide me through the settings")
 @click.option('--verbose', '-v', is_flag=True, help="be more verbose (print settings)")
 def config(package, **options):
-    """Manage the configuration (or settings) of the package.
+    r"""Manage the configuration (or settings) of the package.
 
     The various settings in the .kecpkg-settings.json file are:
 
@@ -40,7 +40,7 @@ def config(package, **options):
     scope_id:       identification of the scope under which the package is uploaded
     service_id:     identification under which the package is re-uploaded
                     (or recently uploaded)
-    last_upload:    date and time of the last uploade
+    last_upload:    date and time of the last upload
     """
     echo_info('Locating package ``'.format(package))
     package_dir = get_package_dir(package_name=package)
@@ -80,7 +80,7 @@ def config(package, **options):
 
 
 def process_additional_exclude_paths(raw_value):
-    """Process additional list of exclude paths and return a list"""
+    """Process additional list of exclude paths and return a list."""
     assert isinstance(raw_value, str), "The value should be a string, got: {}".format(type(raw_value))
 
     pathlist = []
