@@ -151,10 +151,12 @@ def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_excl
     """
     from kecpkg.settings import EXCLUDE_IN_BUILD
     exclude_paths = default_exclude_paths or EXCLUDE_IN_BUILD
+    echo_info("basic excluded paths are: `{}`".format(exclude_paths))
 
     # get additional exclude paths from the settings file
     if additional_exclude_paths and isinstance(additional_exclude_paths, list):
         exclude_paths.extend(additional_exclude_paths)
+        echo_info("additional exclude paths are: `{}`".format(additional_exclude_paths))
 
     if not os.path.exists(root_path):
         echo_failure("The root path: '{}' does not exist".format(root_path))
@@ -166,6 +168,8 @@ def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_excl
         for exclude_path in exclude_paths:
             if exclude_path in dirs:
                 dirs.remove(exclude_path)
+                if verbose:
+                    echo_warning("Ignored path `{}`".format(exclude_path))
 
         for filename in filenames:
             # print([(filename,ptrn,fnmatch.fnmatch(filename, ptrn)) for ptrn in exclude_paths])
