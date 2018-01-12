@@ -1,10 +1,12 @@
 import os
+from zipfile import ZipFile
 
 from click.testing import CliRunner
 
 from kecpkg.cli import kecpkg
-from kecpkg.utils import get_package_dir
-from tests.utils import temp_chdir, BaseTestCase
+from kecpkg.settings import load_settings, save_settings, copy_default_settings
+from kecpkg.utils import get_package_dir, ensure_dir_exists
+from tests.utils import temp_chdir, BaseTestCase, touch_file
 
 
 class TestCommandPurge(BaseTestCase):
@@ -23,4 +25,41 @@ class TestCommandPurge(BaseTestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertExists(os.path.join(package_dir, 'dist'))
 
+    def test_build_with_extra_ignores(self):
+        pkgname = 'new_pkg'
 
+        with temp_chdir() as d:
+            runner = CliRunner()
+            result = runner.invoke(kecpkg, ['new', pkgname, '--no-venv'])
+            package_dir = get_package_dir(pkgname)
+            self.assertTrue(os.path.exists(package_dir))
+            ensure_dir_exists(os.path.join(package_dir, 'data'))
+
+            # add additional files (to exclude for building later)
+            touch_file(os.path.join(package_dir, 'data','somefile.txt'))
+            touch_file(os.path.join(package_dir, 'local_extra_file.someext.txt'))
+
+            os.chdir(package_dir)
+
+            # check if those files exists
+            package_dir_contents = os.listdir(os.path.join(package_dir))
+            self.assertTrue('local_extra_file.someext.txt' in package_dir_contents)
+            self.assertTrue('data' in package_dir_contents)
+
+            # set exclude_paths in settings
+            settings = copy_default_settings()
+            settings["exclude_paths"] = ["data", "local_extra_file.*"]
+            save_settings(settings, package_dir=package_dir)
+
+            # run the builder
+            result = runner.invoke(kecpkg, ['build', pkgname, '--verbose'])
+            self.assertEqual(result.exit_code, 0)
+            self.assertExists(os.path.join(package_dir, 'dist'))
+
+            # check the zip such that the extra files are not packaged
+            dist_list = os.listdir(os.path.join(package_dir, 'dist'))
+            zipfile = ZipFile(os.path.join(package_dir, 'dist', dist_list[0]), 'r')
+            contents = zipfile.namelist()
+
+            self.assertFalse('local_extra_file.someext.txt' in contents)
+            self.assertFalse('data' in contents)

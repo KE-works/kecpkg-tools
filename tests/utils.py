@@ -51,6 +51,13 @@ def connected_to_internet():  # no cov
     except:
         return False
 
+def touch_file(path):
+    """Create an empty file in path.
+
+    :param path: path (filename)
+    """
+    with open(path, 'a'):
+        os.utime(path, None)
 
 
 
