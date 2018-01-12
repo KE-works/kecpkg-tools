@@ -35,7 +35,7 @@ def build(package=None, **options):
 
 def build_package(package_dir, build_path, settings, verbose=False):
     """Perform the actual building of the kecpkg zip."""
-    additional_exclude_paths = settings.get('exclude_path')
+    additional_exclude_paths = settings.get('exclude_paths')
 
     artifacts = get_artifacts_on_disk(package_dir, verbose=verbose, additional_exclude_paths=additional_exclude_paths)
     dist_filename = '{}-{}-py{}.kecpkg'.format(settings.get('package_name'), settings.get('version'),
