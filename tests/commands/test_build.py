@@ -25,6 +25,40 @@ class TestCommandPurge(BaseTestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertExists(os.path.join(package_dir, 'dist'))
 
+            # check if dist is filled
+            package_dir_contents = os.listdir(os.path.join(package_dir, 'dist'))
+            self.assertTrue(len(package_dir_contents), 1)
+
+    def test_build_with_prune(self):
+        pkgname = 'new_pkg'
+
+        with temp_chdir() as d:
+            runner = CliRunner()
+            result = runner.invoke(kecpkg, ['new', pkgname, '--no-venv'])
+            package_dir = get_package_dir(pkgname)
+            self.assertTrue(os.path.exists(package_dir))
+
+            os.chdir(package_dir)
+
+            result = runner.invoke(kecpkg, ['build', pkgname])
+            self.assertEqual(result.exit_code, 0)
+            self.assertExists(os.path.join(package_dir, 'dist'))
+
+            # check if dist is filled
+            package_dir_contents = os.listdir(os.path.join(package_dir, 'dist'))
+            self.assertTrue(len(package_dir_contents), 1)
+
+            # restart the build, with prune and check if dist still has 1
+            result = runner.invoke(kecpkg, ['build', pkgname, '--prune'])
+            self.assertEqual(result.exit_code, 0)
+            self.assertExists(os.path.join(package_dir, 'dist'))
+
+            # check if dist is filled
+            package_dir_contents = os.listdir(os.path.join(package_dir, 'dist'))
+            self.assertTrue(len(package_dir_contents), 1)
+
+
+
     def test_build_with_extra_ignores(self):
         pkgname = 'new_pkg'
 
