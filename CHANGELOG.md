@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.0 (15JAN18)
+ * added the ability to add additional ignores to the builder. Use `kecpkg config` to set additional list of pathnames or filenames to ignore. One can use eg. 'data' (for subdirectories) or '*.txt' as suitable values.
+ * added an option `kecpkg build --prune` to the list of option for the builder. `--prune` is an alternative to `--clean`.
+
 ## 0.7.1 (6DEC17)
  * removed the '.git' directory from the packaged kecpkg
 
