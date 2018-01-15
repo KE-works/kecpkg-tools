@@ -5,13 +5,16 @@ import click as click
 from pykechain import Client, get_project
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info, echo_success, echo_failure
-from kecpkg.settings import load_settings, save_settings
+from kecpkg.settings import load_settings, save_settings, SETTINGS_FILENAME
 from kecpkg.utils import get_package_dir, get_package_name
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,
                short_help="Upload package to a KE-chain 2 scope")
 @click.argument('package', required=False)
+@click.option('--config', '--settings', '-c', 'settings_filename',
+              help="path to the configuration file (default `{}`".format(SETTINGS_FILENAME),
+              type=click.Path(exists=True), default=SETTINGS_FILENAME)
 @click.option('--url', '-U', help="URL of the KE-chain instance (eg. https://<instance>.ke-chain.com)")
 @click.option('--username', '-u', help="username for KE-chain", default=os.environ.get('USER', ''))
 @click.option('--password', '-p', help="password for KE-chain")
@@ -33,7 +36,7 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
     If no options are provided, the interactive mode is triggered.
     """
     package_name = package or get_package_name() or click.prompt('Package name')
-    settings = load_settings(package_dir=get_package_dir(package_name))
+    settings = load_settings(package_dir=get_package_dir(package_name), settings_filename=options.get('settings_filename'))
 
     if not url or not ((username and password) or token):
         url = click.prompt('Url (incl http(s)://)', default=settings.get('url') or url)
@@ -96,7 +99,7 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
         ))
         if service_id:
             settings['service_id'] = str(service_id)
-        save_settings(settings)
+        save_settings(settings, settings_filename=options.get('settings_filename'))
 
     # do upload
     build_path = os.path.join(get_package_dir(package_name), settings.get('build_dir'))
@@ -105,10 +108,11 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
         sys.exit(400)
 
     upload_package(scope_to_upload, build_path, kecpkg, service_id=service_id, settings=settings,
-                   store_settings=options.get('store'))
+                   store_settings=options.get('store'), settings_filename=options.get('settings_filename'))
 
 
-def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, settings=None, store_settings=True):
+def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, settings=None, store_settings=True,
+                   settings_filename=None):
     """
     Upload the package from build_path to the right scope, create a new KE-chain SIM service.
 
@@ -118,6 +122,7 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
     :param service_id: UUID of the service to upload to
     :param settings: settings of the package
     :param store_settings: store the settings after update (eg service_id after upload)
+    :param settings_filename: pathname of the file where the settings are stored
     :return: None
     """
     # if not (kecpkg_path and not build_path) or not (build_path and not kecpkg_path):
@@ -182,7 +187,7 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
         settings['service_id'] = str(service.id)
         from datetime import datetime
         settings['last_upload'] = str(datetime.now().isoformat())
-        save_settings(settings)
+        save_settings(settings, settings_filename=settings_filename)
 
 
 def validate_scopes(scope_guess, scope_matcher):

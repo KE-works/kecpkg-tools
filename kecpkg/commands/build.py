@@ -4,13 +4,16 @@ from zipfile import ZipFile
 import click as click
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info
-from kecpkg.settings import load_settings
+from kecpkg.settings import load_settings, SETTINGS_FILENAME
 from kecpkg.utils import ensure_dir_exists, remove_path, get_package_dir, get_artifacts_on_disk
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,
                short_help="Build the package and create a kecpkg file")
 @click.argument('package', required=False)
+@click.option('--config', '--settings', '-c', 'settings_filename',
+              help="path to the configuration file (default `{}`".format(SETTINGS_FILENAME),
+              type=click.Path(exists=True), default=SETTINGS_FILENAME)
 @click.option('--clean', '--clear', '--prune', 'clean_first', is_flag=True,
               help='Remove build artifacts before building')
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
@@ -20,7 +23,7 @@ def build(package=None, **options):
     package_dir = get_package_dir(package_name=package)
     package_name = os.path.basename(package_dir)
     echo_info('Package `{}` has been selected'.format(package_name))
-    settings = load_settings(package_dir=package_dir)
+    settings = load_settings(package_dir=package_dir, settings_filename=options.get('settings_filename'))
 
     # ensure build directory is there
     build_dir = settings.get('build_dir', 'dist')

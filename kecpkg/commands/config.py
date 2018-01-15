@@ -10,6 +10,9 @@ from kecpkg.utils import get_package_dir, copy_path
 @click.command(context_settings=CONTEXT_SETTINGS,
                short_help="Finds and updated the configuration of the kecpkg")
 @click.argument('package', required=False)
+@click.option('--config', '--settings', '-c', 'settings_filename',
+              help="path to the configuration file (default `{}`".format(SETTINGS_FILENAME),
+              type=click.Path(exists=True), default=SETTINGS_FILENAME)
 @click.option('--init', is_flag=True, help="will init a settingsfile if not found")
 @click.option('--interactive', '-i', is_flag=True, help="interactive mode; guide me through the settings")
 @click.option('--verbose', '-v', is_flag=True, help="be more verbose (print settings)")
@@ -48,15 +51,15 @@ def config(package, **options):
     echo_info('Package `{}` has been selected'.format(package_name))
 
     if options.get('init'):
-        if os.path.exists(os.path.join(package_dir, SETTINGS_FILENAME)) and \
+        if os.path.exists(os.path.join(package_dir, options.get('settings_filename'))) and \
                 click.confirm('Are you sure you want to overwrite the current settingsfile '
                               '(old settings will be a backup)?'):
-            copy_path(os.path.join(package_dir, SETTINGS_FILENAME),
-                      os.path.join(package_dir, "{}-backup".format(SETTINGS_FILENAME)))
+            copy_path(os.path.join(package_dir, options.get('settings_filename')),
+                      os.path.join(package_dir, "{}-backup".format(options.get('settings_filename'))))
         echo_info('Creating new settingsfile')
         settings = copy_default_settings()
         settings['package_name'] = package_name
-        save_settings(settings, package_dir=package_dir)
+        save_settings(settings, package_dir=package_dir, settings_filename=options.get('settings_filename'))
 
     settings = load_settings(package_dir=package_dir)
     if options.get('interactive'):
@@ -69,7 +72,7 @@ def config(package, **options):
         settings['exclude_paths'] = click.prompt("Exclude additional paths from kecpkg (eg. 'data, input')",
                                                  default=settings.get('exclude_paths', ''),
                                                  value_proc=process_additional_exclude_paths)
-        save_settings(settings, package_dir=package_dir)
+        save_settings(settings, package_dir=package_dir, settings_filename=options.get('settings_filename'))
 
     if options.get('verbose'):
         for k, v in settings.items():
