@@ -11,7 +11,8 @@ from kecpkg.utils import ensure_dir_exists, remove_path, get_package_dir, get_ar
 @click.command(context_settings=CONTEXT_SETTINGS,
                short_help="Build the package and create a kecpkg file")
 @click.argument('package', required=False)
-@click.option('--clean', '--clear', 'clean_first', is_flag=True, help='Remove build artifacts before building')
+@click.option('--clean', '--clear', '--prune', 'clean_first', is_flag=True,
+              help='Remove build artifacts before building')
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
 def build(package=None, **options):
     """Build the package and create a kecpkg file."""
