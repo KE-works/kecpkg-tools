@@ -36,7 +36,8 @@ def upload(package=None, url=None, username=None, password=None, token=None, sco
     If no options are provided, the interactive mode is triggered.
     """
     package_name = package or get_package_name() or click.prompt('Package name')
-    settings = load_settings(package_dir=get_package_dir(package_name), settings_filename=options.get('settings_filename'))
+    settings = load_settings(package_dir=get_package_dir(package_name),
+                             settings_filename=options.get('settings_filename'))
 
     if not url or not ((username and password) or token):
         url = click.prompt('Url (incl http(s)://)', default=settings.get('url') or url)
