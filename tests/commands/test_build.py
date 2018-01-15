@@ -97,3 +97,30 @@ class TestCommandPurge(BaseTestCase):
 
             self.assertFalse('local_extra_file.someext.txt' in contents)
             self.assertFalse('data' in contents)
+
+    def test_build_with_alternate_config(self):
+        pkgname = 'new_pkg'
+        alt_settings = 'alt-settings.json'
+
+        with temp_chdir() as d:
+            runner = CliRunner()
+            result = runner.invoke(kecpkg, ['new', pkgname, '--no-venv'])
+            package_dir = get_package_dir(pkgname)
+            self.assertTrue(os.path.exists(package_dir))
+
+            # set alternative settings path
+            settings = copy_default_settings()
+            settings["package_name"] = pkgname
+            save_settings(settings, package_dir=package_dir, settings_filename=alt_settings)
+
+            os.chdir(package_dir)
+
+            result = runner.invoke(kecpkg, ['build', pkgname, '--config', alt_settings])
+            self.assertEqual(result.exit_code, 0)
+            self.assertExists(os.path.join(package_dir, 'dist'))
+
+            dist_dir_contents = os.listdir(os.path.join(package_dir, 'dist'))
+            self.assertTrue(len(dist_dir_contents), 1)
+            self.assertTrue(pkgname in dist_dir_contents[0],
+                            "the name of the pkg `{}` should be in the name of "
+                            "the built kecpkg `{}`".format(pkgname, dist_dir_contents[0]))
