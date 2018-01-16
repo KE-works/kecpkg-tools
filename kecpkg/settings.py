@@ -31,7 +31,7 @@ EXCLUDE_DIRS_IN_BUILD = [
 EXCLUDE_PATHS_IN_BUILD = [
     '.gitignore', '*.pyc', '*.pyo', '*.pyd', '*$py.class', '*.egg-info', '.installed.cfg', '.coveragerc', '*.egg',
     'pip-log.txt', '*.log', 'pip-delete-this-directory.txt', '.coverage*', 'nosetests.xml', 'coverage.xml', '*.cover',
-    'env.bak', 'venv.bak', 'pip-selfcheck.json', '*.so', '*-dist'
+    'env.bak', 'venv.bak', 'pip-selfcheck.json', '*.so', '*-dist', '.*.swp'
 ]
 
 EXCLUDE_IN_BUILD = EXCLUDE_DIRS_IN_BUILD + EXCLUDE_PATHS_IN_BUILD

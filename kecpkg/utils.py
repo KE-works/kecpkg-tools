@@ -14,8 +14,6 @@ from contextlib import contextmanager
 import six
 
 from kecpkg.commands.utils import echo_failure, echo_info, echo_warning
-from kecpkg.files.rendering import render_to_file
-
 
 def ensure_dir_exists(d):
     """Ensure that directory exists, otherwise make directory."""
@@ -208,6 +206,7 @@ def render_package_info(settings, package_dir, backup=True):
     elif os.path.exists(package_info_path):
         os.remove(package_info_path)
 
+    from kecpkg.files.rendering import render_to_file
     render_to_file(package_info_filename,
                    content=dict(requirements_txt='requirements.txt',
                                 entrypoint_script=settings.get('entrypoint_script'),
