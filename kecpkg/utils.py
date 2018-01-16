@@ -14,6 +14,7 @@ from contextlib import contextmanager
 import six
 
 from kecpkg.commands.utils import echo_failure, echo_info, echo_warning
+from kecpkg.files.rendering import render_to_file
 
 
 def ensure_dir_exists(d):
@@ -188,6 +189,30 @@ def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_excl
     if verbose:
         echo_info('{}'.format(artifacts))
     return artifacts
+
+
+def render_package_info(settings, package_dir, backup=True):
+    """Render a new package_info.json based on the settings.
+
+    :param settings: settings
+    :param package_dir: directory where to put the package_info.json
+    :param backup: (optional) if set to True the original package_info will be backed-up
+    :return:
+    """
+    package_info_filename = 'package_info.json'
+    package_info_path = os.path.join(package_dir, package_info_filename)
+    if backup and os.path.exists(package_info_path):
+        if os.path.exists("{}-dist".format(package_info_path)):
+            os.remove("{}-dist".format(package_info_path))
+        os.rename(package_info_path, "{}-dist".format(package_info_path))
+    elif os.path.exists(package_info_path):
+        os.remove(package_info_path)
+
+    render_to_file(package_info_filename,
+                   content=dict(requirements_txt='requirements.txt',
+                                entrypoint_script=settings.get('entrypoint_script'),
+                                entrypoint_func=settings.get('entrypoint_func')),
+                   target_dir=package_dir)
 
 
 # Python Operation regarding Virtual environments
