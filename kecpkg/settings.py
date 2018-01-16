@@ -24,14 +24,14 @@ DEFAULT_SETTINGS = OrderedDict([
 ])
 
 EXCLUDE_DIRS_IN_BUILD = [
-    'venv', 'dist', '.idea', '.tox', '.cache', '.git', 'venv*', '.env', '__pycache__', 'develop-eggs', 'downloads',
-    'eggs', 'lib', 'lib64', 'sdist', 'wheels', '.hypothesis', '.ipynb_checkpoints', '.mypy_cache'
+    'venv', 'dist', '.idea', '.tox', '.cache', '.git', 'venv*', '_venv*', '.env', '__pycache__', 'develop-eggs',
+    'downloads', 'eggs', 'lib', 'lib64', 'sdist', 'wheels', '.hypothesis', '.ipynb_checkpoints', '.mypy_cache'
 ]
 
 EXCLUDE_PATHS_IN_BUILD = [
     '.gitignore', '*.pyc', '*.pyo', '*.pyd', '*$py.class', '*.egg-info', '.installed.cfg', '.coveragerc', '*.egg',
     'pip-log.txt', '*.log', 'pip-delete-this-directory.txt', '.coverage*', 'nosetests.xml', 'coverage.xml', '*.cover',
-    'env.bak', 'venv.bak', 'pip-selfcheck.json', '*.so'
+    'env.bak', 'venv.bak', 'pip-selfcheck.json', '*.so', '*-dist'
 ]
 
 EXCLUDE_IN_BUILD = EXCLUDE_DIRS_IN_BUILD + EXCLUDE_PATHS_IN_BUILD
