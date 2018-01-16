@@ -15,7 +15,7 @@ from kecpkg.utils import normalise_name
 @click.argument('package', required=False)
 @click.option('--settings', '--config', '-s', 'settings_filename',
               help="path to the setting file (default `{}`".format(SETTINGS_FILENAME),
-              type=click.Path(exists=True), default=SETTINGS_FILENAME)
+              type=click.Path(), default=SETTINGS_FILENAME)
 @click.option('--venv', help="name of the virtual python environment to create")
 @click.option('--script', help="name of the script inside the package that contains the entrypoint")
 @click.option('--global-packages', is_flag=True,

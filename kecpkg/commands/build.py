@@ -16,9 +16,9 @@ from kecpkg.utils import ensure_dir_exists, remove_path, get_package_dir, get_ar
               type=click.Path(exists=True), default=SETTINGS_FILENAME)
 @click.option('--clean', '--clear', '--prune', 'clean_first', is_flag=True,
               help='Remove build artifacts before building')
-@click.option('--update', '--update-info', 'render-package-info', is_flag=True, default=True,
-              help="Update the package-info.json for KE-crunch execution to point to correct entrypoint based on "
-                   "settings. This is normally okay to leave of. Turn `off` if you have a custom package-info.json.")
+@click.option('--update/--no-update', 'render_package_info', is_flag=True, default=True,
+              help="Update the `package-info.json` for the KE-crunch execution to point to correct entrypoint based on "
+                   "settings. This is okay to leave ON. Use `--no-update` if you have a custom `package-info.json`.")
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
 def build(package=None, **options):
     """Build the package and create a kecpkg file."""
@@ -32,7 +32,7 @@ def build(package=None, **options):
     build_dir = settings.get('build_dir', 'dist')
     build_path = os.path.join(package_dir, build_dir)
 
-    if options.get('render-package-info'):
+    if options.get('render_package_info'):
         render_package_info(settings, package_dir=package_dir, backup=True)
 
     if options.get('clean_first'):
