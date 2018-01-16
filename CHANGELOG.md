@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.9.0 (UNRELEASED)
- * added the ability to add multiple configurations.
+## 0.9.0 (16JAN18)
+ * added the ability to add multiple configurations. You can use this to create multiple settings files and build for each setting file another kecpkg. Use `kecpkg build --settings <anothersettings.json>` to create a new kecpkg in the `dist` directory. The `package-info.json` will be recreated based on what is set in the `settings` and stored inside the kecpkg. Use `kecpkg upload --settings <anothersettings.json>` to upload this kecpkg to KE-chain. You can now use a cmd or batch script with multiple setting files to create a multitude of kecpkgs and automatically upload (and even replace) them in a KE-chain project.
+ * added `--update` and `--no-update` flags to `kecpkg build`. The `package-info.json` file is needed for the KE-crunch server to understand what module and what function inside the kecpkg to execute. Normally this is re-rendered (updated) in each build sessions based on the contents of the settings file. If you have a custom `package-info.json`, you can use the `--no-update` flag on `kecpkg build --no-update` to prevent the updating the `package-info.json`. You might want to consider updating the settings file with the correct values for the `package-info.json` instead.
 
 ## 0.8.0 (15JAN18)
  * added the ability to add additional ignores to the builder. Use `kecpkg config` to set additional list of pathnames or filenames to ignore. One can use eg. 'data' (for subdirectories) or '*.txt' as suitable values.
