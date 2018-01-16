@@ -12,8 +12,8 @@ from kecpkg.utils import get_package_dir, get_package_name
 @click.command(context_settings=CONTEXT_SETTINGS,
                short_help="Upload package to a KE-chain 2 scope")
 @click.argument('package', required=False)
-@click.option('--config', '--settings', '-c', 'settings_filename',
-              help="path to the configuration file (default `{}`".format(SETTINGS_FILENAME),
+@click.option('--settings', '--config', '-s', 'settings_filename',
+              help="path to the setting file (default `{}`".format(SETTINGS_FILENAME),
               type=click.Path(exists=True), default=SETTINGS_FILENAME)
 @click.option('--url', '-U', help="URL of the KE-chain instance (eg. https://<instance>.ke-chain.com)")
 @click.option('--username', '-u', help="username for KE-chain", default=os.environ.get('USER', ''))

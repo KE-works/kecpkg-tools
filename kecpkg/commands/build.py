@@ -5,17 +5,20 @@ import click as click
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info
 from kecpkg.settings import load_settings, SETTINGS_FILENAME
-from kecpkg.utils import ensure_dir_exists, remove_path, get_package_dir, get_artifacts_on_disk
+from kecpkg.utils import ensure_dir_exists, remove_path, get_package_dir, get_artifacts_on_disk, render_package_info
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,
                short_help="Build the package and create a kecpkg file")
 @click.argument('package', required=False)
-@click.option('--config', '--settings', '-c', 'settings_filename',
-              help="path to the configuration file (default `{}`".format(SETTINGS_FILENAME),
+@click.option('--settings', '--config', '-s', 'settings_filename',
+              help="path to the setting file (default `{}`".format(SETTINGS_FILENAME),
               type=click.Path(exists=True), default=SETTINGS_FILENAME)
 @click.option('--clean', '--clear', '--prune', 'clean_first', is_flag=True,
               help='Remove build artifacts before building')
+@click.option('--update', '--update-info', 'render-package-info', is_flag=True, default=True,
+              help="Update the package-info.json for KE-crunch execution to point to correct entrypoint based on "
+                   "settings. This is normally okay to leave of. Turn `off` if you have a custom package-info.json.")
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
 def build(package=None, **options):
     """Build the package and create a kecpkg file."""
@@ -28,6 +31,9 @@ def build(package=None, **options):
     # ensure build directory is there
     build_dir = settings.get('build_dir', 'dist')
     build_path = os.path.join(package_dir, build_dir)
+
+    if options.get('render-package-info'):
+        render_package_info(settings, package_dir=package_dir, backup=True)
 
     if options.get('clean_first'):
         remove_path(build_path)

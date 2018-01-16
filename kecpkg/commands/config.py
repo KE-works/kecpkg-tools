@@ -10,8 +10,8 @@ from kecpkg.utils import get_package_dir, copy_path
 @click.command(context_settings=CONTEXT_SETTINGS,
                short_help="Finds and updated the configuration of the kecpkg")
 @click.argument('package', required=False)
-@click.option('--config', '--settings', '-c', 'settings_filename',
-              help="path to the configuration file (default `{}`".format(SETTINGS_FILENAME),
+@click.option('--settings', '--config', '-s', 'settings_filename',
+              help="path to the setting file (default `{}`".format(SETTINGS_FILENAME),
               type=click.Path(exists=True), default=SETTINGS_FILENAME)
 @click.option('--init', is_flag=True, help="will init a settingsfile if not found")
 @click.option('--interactive', '-i', is_flag=True, help="interactive mode; guide me through the settings")

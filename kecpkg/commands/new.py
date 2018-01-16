@@ -3,15 +3,19 @@ import sys
 
 import click
 
+from kecpkg.commands.config import process_additional_exclude_paths
 from kecpkg.commands.utils import echo_failure, CONTEXT_SETTINGS, echo_info, echo_success
 from kecpkg.create import create_package, create_venv, pip_install_venv
-from kecpkg.settings import load_settings, copy_default_settings, save_settings
+from kecpkg.settings import load_settings, copy_default_settings, save_settings, SETTINGS_FILENAME
 from kecpkg.utils import normalise_name
 
 
 @click.command(short_help="Create a new kecpkg SIM script package",
                context_settings=CONTEXT_SETTINGS)
 @click.argument('package', required=False)
+@click.option('--settings', '--config', '-s', 'settings_filename',
+              help="path to the setting file (default `{}`".format(SETTINGS_FILENAME),
+              type=click.Path(exists=True), default=SETTINGS_FILENAME)
 @click.option('--venv', help="name of the virtual python environment to create")
 @click.option('--script', help="name of the script inside the package that contains the entrypoint")
 @click.option('--global-packages', is_flag=True,
@@ -32,7 +36,7 @@ def new(package=None, **options):
     +-- .gitignore
     +-- .kecpkg-settings.json
     """
-    settings = load_settings(lazy=True)
+    settings = load_settings(lazy=True, settings_filename=options.get('settings_filename'))
     if not settings:
         settings = copy_default_settings()
     package_root_dir = os.getcwd()
@@ -56,6 +60,9 @@ def new(package=None, **options):
         settings['email'] = click.prompt('Author\'s email', default=settings.get('email', ''))
         settings['python_version'] = click.prompt('Python version (choose from: {})'.format(settings.get('pyversions')),
                                                   default='3.5')
+        settings['exclude_paths'] = click.prompt("Exclude additional paths from kecpkg (eg. 'data, input')",
+                                                 default=settings.get('exclude_paths', ''),
+                                                 value_proc=process_additional_exclude_paths)
     if options.get('script'):
         script_base = normalise_name(options.get('script').replace('.py', ''))
         echo_info('Setting the script to `{}`'.format(script_base))
@@ -75,7 +82,7 @@ def new(package=None, **options):
         settings['venv_dir'] = None
 
     # save the settings (in the package_dir)
-    save_settings(settings, package_dir=package_dir)
+    save_settings(settings, package_dir=package_dir, settings_filename=options.get('settings_filename'))
 
     echo_success('Package `{package_name}` created in `{package_dir}`'.format(package_name=package_name,
                                                                               package_dir=package_dir))
