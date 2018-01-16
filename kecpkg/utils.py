@@ -15,6 +15,7 @@ import six
 
 from kecpkg.commands.utils import echo_failure, echo_info, echo_warning
 
+
 def ensure_dir_exists(d):
     """Ensure that directory exists, otherwise make directory."""
     if not os.path.exists(d):
