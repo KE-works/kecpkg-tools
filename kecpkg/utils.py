@@ -26,10 +26,14 @@ def create_file(filepath, content=None, overwrite=True):
     """
     Create file and optionally fill it with content.
 
-    Will overwrite file already in place if overwrite flag is set
+    Will overwrite file already in place if overwrite flag is set.
+    If a list is provided each line in the list is written on a new line in the file (`fp.writelines`)
+    otherwise the string will be written as such and newline characters (`\\\\n`) will be respected.
 
     :param filepath: full path to a file to create
-    :param content:
+    :param content: textual content.
+    :type content: list or string
+    :param overwrite: boolean if you want to overwrite
     :return:
     """
     ensure_dir_exists(os.path.dirname(os.path.abspath(filepath)))
@@ -38,7 +42,9 @@ def create_file(filepath, content=None, overwrite=True):
     if not os.path.exists(filepath) or (os.path.exists(filepath) and overwrite):
         with open(filepath, 'w') as fd:
             # os.utime(filepath, times=None)
-            if content:
+            if isinstance(content, list):
+                fd.writelines(content)
+            else:
                 fd.write(content)
     else:
         echo_failure("File '{}' already exists.".format(filepath))
@@ -145,9 +151,13 @@ def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_excl
     """
     Retrieve all artifacts on disk.
 
+    The artifacts are stripped from their rootpath.
+
     :param root_path: root_path to collect all artifacts from
-    :param exclude_paths: (optional) directory names and filenames to exclude
-    :return: dictionary with {'property_id': ['attachment_path1', ...], ...}
+    :param additional_exclude_paths: (optional) directory names and filenames to exclude
+    :param default_exclude_paths: (optional) directory names and filenames to exclude
+    :param verbose: be verbose (or not)
+    :return: list with ['file_path1', ...]
     """
     from kecpkg.settings import EXCLUDE_IN_BUILD
     exclude_paths = default_exclude_paths or EXCLUDE_IN_BUILD
@@ -188,7 +198,6 @@ def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_excl
     if verbose:
         echo_info('{}'.format(artifacts))
     return artifacts
-
 
 def render_package_info(settings, package_dir, backup=True):
     """Render a new package_info.json based on the settings.

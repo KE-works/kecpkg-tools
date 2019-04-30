@@ -11,6 +11,7 @@ from kecpkg.utils import ensure_dir_exists, create_file, get_package_dir
 
 SETTINGS_FILENAME = '.kecpkg_settings.json'
 SETTINGS_FILE = os.path.join(os.getcwd(), SETTINGS_FILENAME)
+ARTIFACTS_FILENAME = 'ARTIFACTS'
 
 DEFAULT_SETTINGS = OrderedDict([
     ('version', '0.0.1'),
@@ -20,12 +21,15 @@ DEFAULT_SETTINGS = OrderedDict([
     ('entrypoint_script', 'script'),
     ('entrypoint_func', 'main'),
     ('build_dir', 'dist'),
-    ('requirements_filename', 'requirements.txt')
+    ('requirements_filename', 'requirements.txt'),
+    ('artifacts_filename', ARTIFACTS_FILENAME),
+    ('hash_algorithm', 'sha256')
 ])
 
 EXCLUDE_DIRS_IN_BUILD = [
     'venv', 'dist', '.idea', '.tox', '.cache', '.git', 'venv*', '_venv*', '.env', '__pycache__', 'develop-eggs',
-    'downloads', 'eggs', 'lib', 'lib64', 'sdist', 'wheels', '.hypothesis', '.ipynb_checkpoints', '.mypy_cache'
+    'downloads', 'eggs', 'lib', 'lib64', 'sdist', 'wheels', '.hypothesis', '.ipynb_checkpoints', '.mypy_cache',
+    '.vscode'
 ]
 
 EXCLUDE_PATHS_IN_BUILD = [

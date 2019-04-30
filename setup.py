@@ -51,7 +51,8 @@ setup(
         'click',
         'atomicwrites',
         'jinja2',
-        'pykechain>=1.13',
+        'pykechain>=2.0.0',
+        'python-gnupg'
     ),
 
     tests_require=(

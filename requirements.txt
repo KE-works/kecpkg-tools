@@ -3,6 +3,8 @@ click
 atomicwrites
 jinja2
 pykechain>=1.13
+python-gnupg
+fs
 
 
 # testing
