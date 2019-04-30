@@ -22,6 +22,14 @@ from kecpkg.utils import ensure_dir_exists, remove_path, get_package_dir, get_ar
 @click.option('--update/--no-update', 'update_package_info', is_flag=True, default=True,
               help="Update the `package-info.json` for the KE-crunch execution to point to correct entrypoint based on "
                    "settings. This is okay to leave ON. Use `--no-update` if you have a custom `package-info.json`.")
+@click.option('--sign/--no-sign', 'do_sign', is_flag=True, default=False,
+              help="Sign the contents of the package with a cryptographic key. Defaults to not sign.")
+@click.option('--keyid', '--key-id', '-k', 'sign_keyid',
+              help="ID of the cryptographic key to do the sign the contents of the build package. "
+                   "Use in combination with `--sign`")
+@click.option('--passphrase', '-p', 'sign_passphrase', prompt=True, hide_input=True,
+              help="Passphrase of the cryptographic key to sing the contents of the built package. "
+                   "Use in combination with `--sign` and `--keyid`")
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
 def build(package=None, **options):
     """Build the package and create a kecpkg file."""
@@ -43,12 +51,12 @@ def build(package=None, **options):
     ensure_dir_exists(build_path)
 
     # do package building
-    build_package(package_dir, build_path, settings, verbose=options.get('verbose'))
+    build_package(package_dir, build_path, settings, options=options, verbose=options.get('verbose'))
 
     echo_info('Complete')
 
 
-def build_package(package_dir, build_path, settings, verbose=False):
+def build_package(package_dir, build_path, settings, options=None, verbose=False):
     """Perform the actual building of the kecpkg zip."""
     additional_exclude_paths = settings.get('exclude_paths')
 
@@ -61,8 +69,8 @@ def build_package(package_dir, build_path, settings, verbose=False):
     generate_artifact_hashes(package_dir, artifacts, settings, verbose=verbose)
     artifacts.append(settings.get('artifacts_filename', 'ARTIFACTS'))
 
-    # TODO: fix signing of a package
-    # sign_package(package_dir, settings, verbose=verbose)
+    if options.get('do_sign'):
+        sign_package(package_dir, settings, options=options, verbose=verbose)
 
     with ZipFile(os.path.join(build_path, dist_filename), 'w') as dist_zip:
         for artifact in artifacts:
@@ -121,7 +129,7 @@ def generate_artifact_hashes(package_dir, artifacts, settings, verbose=False):
                 overwrite=True)
 
 
-def sign_package(package_dir, settings, verbose=False):
+def sign_package(package_dir, settings, options=None, verbose=False):
     """
     Sign the package with a GPG/PGP key.
 
@@ -135,16 +143,18 @@ def sign_package(package_dir, settings, verbose=False):
 
     import gnupg
     logger = logging.getLogger('gnupg')
-    gpg = gnupg.GPG()  #binary='/usr/local/bin/gpg')
+    gpg = gnupg.GPG()  # binary='/usr/local/bin/gpg')
 
-    filedata = ""
+    echo_info('Signing package contents')
+
     with open(os.path.join(package_dir, settings.get('artifacts_filename'))) as fp:
-        for chunk in read_chunks(fp):
-            filedata += chunk
+        results = gpg.sign_file(fp,
+                                keyid=options.get('sign_keyid'),
+                                passphrase=options.get('sign_passphrase'),
+                                detach=True,
+                                output=settings.get('artifacts_filename') + '.SIG')
 
-    gpg.sign(filedata,
-                   default_key='hostmaster@ke-works.com',
-                   detach=True)
-                   # output='SIGNATURE')
-
-    print('helle')
+    if verbose:
+        echo_info('Successfully signed the package contents.')
+        from pprint import pprint
+        pprint(results.__dict__)
