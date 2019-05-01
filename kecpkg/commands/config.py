@@ -2,9 +2,9 @@ import os
 
 import click
 
-from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info, echo_success
+from kecpkg.commands.utils import CONTEXT_SETTINGS
 from kecpkg.settings import load_settings, copy_default_settings, save_settings, SETTINGS_FILENAME
-from kecpkg.utils import get_package_dir, copy_path
+from kecpkg.utils import get_package_dir, copy_path, echo_success, echo_info
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,

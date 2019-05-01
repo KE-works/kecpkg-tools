@@ -6,9 +6,9 @@ import sys
 
 import six
 
-from kecpkg.commands.utils import echo_failure, echo_info, echo_success
 from kecpkg.files.rendering import render_to_file
-from kecpkg.utils import ensure_dir_exists, get_proper_python, NEED_SUBPROCESS_SHELL, venv
+from kecpkg.utils import ensure_dir_exists, get_proper_python, NEED_SUBPROCESS_SHELL, venv, echo_success, echo_failure, \
+    echo_info
 
 
 def create_package(package_dir, settings):

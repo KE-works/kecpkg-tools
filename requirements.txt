@@ -2,9 +2,10 @@
 click
 atomicwrites
 jinja2
-pykechain>=1.13
+pykechain>=2.0.0
+appdirs
 python-gnupg
-fs
+tabulate
 
 
 # testing

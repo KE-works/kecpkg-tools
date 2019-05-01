@@ -4,6 +4,7 @@ Part of the kecpkg-tools project.
 Parts are borrowed from hatch Those parts are are released under the MIT license
 """
 import fnmatch
+import io
 import os
 import platform
 import re
@@ -11,9 +12,8 @@ import shutil
 import sys
 from contextlib import contextmanager
 
+import click
 import six
-
-from kecpkg.commands.utils import echo_failure, echo_info, echo_warning
 
 
 def ensure_dir_exists(d):
@@ -148,6 +148,7 @@ def get_package_name():
 
 
 def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_exclude_paths=None, verbose=False):
+    # type: (str, list, list, bool) -> set
     """
     Retrieve all artifacts on disk.
 
@@ -157,7 +158,8 @@ def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_excl
     :param additional_exclude_paths: (optional) directory names and filenames to exclude
     :param default_exclude_paths: (optional) directory names and filenames to exclude
     :param verbose: be verbose (or not)
-    :return: list with ['file_path1', ...]
+    :return: set with ['file_path1', ...]
+    :rtype: set
     """
     from kecpkg.settings import EXCLUDE_IN_BUILD
     exclude_paths = default_exclude_paths or EXCLUDE_IN_BUILD
@@ -197,7 +199,7 @@ def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_excl
 
     if verbose:
         echo_info('{}'.format(artifacts))
-    return artifacts
+    return set(artifacts)
 
 def render_package_info(settings, package_dir, backup=True):
     """Render a new package_info.json based on the settings.
@@ -228,6 +230,7 @@ def render_package_info(settings, package_dir, backup=True):
 # Graceously borrowed From hatch package.
 
 __platform = platform.system()
+ON_LINUX = os.name == 'posix' or __platform == 'Linux'
 ON_MACOS = os.name == 'mac' or __platform == 'Darwin'
 ON_WINDOWS = NEED_SUBPROCESS_SHELL = os.name == 'nt' or __platform == 'Windows'
 VENV_FLAGS = {
@@ -357,3 +360,62 @@ def venv(venv_path, evars=None):
 
     with env_vars(evars, ignore={'__PYVENV_LAUNCHER__'}):
         yield venv_exe_dir
+
+
+def echo_success(text, nl=True):
+    """
+    Write to the console as a success (Cyan bold).
+
+    :param text: string to write
+    :param nl: add newline
+    """
+    click.secho(text, fg='cyan', bold=True, nl=nl)
+
+
+def echo_failure(text, nl=True):
+    """
+    Write to the console as a failure (Red bold).
+
+    :param text: string to write
+    :param nl: add newline
+    """
+    click.secho(text, fg='red', bold=True, nl=nl)
+
+
+def echo_warning(text, nl=True):
+    """
+    Write to the console as a warning (Yellow bold).
+
+    :param text: string to write
+    :param nl: add newline
+    """
+    click.secho(text, fg='yellow', bold=True, nl=nl)
+
+
+def echo_waiting(text, nl=True):
+    """
+    Write to the console as a waiting (Magenta bold).
+
+    :param text: string to write
+    :param nl: add newline
+    """
+    click.secho(text, fg='magenta', bold=True, nl=nl)
+
+
+def echo_info(text, nl=True):
+    """
+    Write to the console as a informational (bold).
+
+    :param text: string to write
+    :param nl: add newline
+    """
+    click.secho(text, bold=True, nl=nl)
+
+
+def read_chunks(file, size=io.DEFAULT_BUFFER_SIZE):
+    """Yield pieces of data from a file-like object until EOF."""
+    while True:
+        chunk = file.read(size)
+        if not chunk:
+            break
+        yield chunk

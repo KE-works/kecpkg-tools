@@ -1,14 +1,16 @@
 import hashlib
-import io
 import os
+import sys
+from pprint import pprint
 from zipfile import ZipFile
 
 import click as click
 
-from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info
-from kecpkg.settings import load_settings, SETTINGS_FILENAME
+from kecpkg.commands.utils import CONTEXT_SETTINGS
+from kecpkg.gpg import hash_of_file, get_gpg
+from kecpkg.settings import load_settings, SETTINGS_FILENAME, ARTIFACTS_SIG_FILENAME, ARTIFACTS_FILENAME
 from kecpkg.utils import ensure_dir_exists, remove_path, get_package_dir, get_artifacts_on_disk, render_package_info, \
-    create_file
+    create_file, echo_success, echo_failure, echo_info
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,
@@ -23,11 +25,11 @@ from kecpkg.utils import ensure_dir_exists, remove_path, get_package_dir, get_ar
               help="Update the `package-info.json` for the KE-crunch execution to point to correct entrypoint based on "
                    "settings. This is okay to leave ON. Use `--no-update` if you have a custom `package-info.json`.")
 @click.option('--sign/--no-sign', 'do_sign', is_flag=True, default=False,
-              help="Sign the contents of the package with a cryptographic key. Defaults to not sign.")
+              help="Sign the contents of the package with a cryptographic key from the keyring. Defaults to not sign.")
 @click.option('--keyid', '--key-id', '-k', 'sign_keyid',
-              help="ID of the cryptographic key to do the sign the contents of the build package. "
-                   "Use in combination with `--sign`")
-@click.option('--passphrase', '-p', 'sign_passphrase', prompt=True, hide_input=True,
+              help="ID of the cryptographic key to do the sign the contents of the built package. If not provided it "
+                   "will use the default key from the KECPKG keystore. Use in combination with `--sign`")
+@click.option('--passphrase', '-p', 'sign_passphrase', hide_input=True,
               help="Passphrase of the cryptographic key to sing the contents of the built package. "
                    "Use in combination with `--sign` and `--keyid`")
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
@@ -53,37 +55,30 @@ def build(package=None, **options):
     # do package building
     build_package(package_dir, build_path, settings, options=options, verbose=options.get('verbose'))
 
-    echo_info('Complete')
+    echo_success('Complete')
 
 
 def build_package(package_dir, build_path, settings, options=None, verbose=False):
     """Perform the actual building of the kecpkg zip."""
     additional_exclude_paths = settings.get('exclude_paths')
 
-    artifacts = get_artifacts_on_disk(package_dir, verbose=verbose, additional_exclude_paths=additional_exclude_paths)
+    artifacts = get_artifacts_on_disk(package_dir, verbose=verbose,
+                                      additional_exclude_paths=additional_exclude_paths)  # type: set
     dist_filename = '{}-{}-py{}.kecpkg'.format(settings.get('package_name'), settings.get('version'),
                                                settings.get('python_version'))
     echo_info('Creating package name `{}`'.format(dist_filename))
 
     if verbose: echo_info(("Creating 'ARTIFACTS' file with list of contents and their hashes"))
     generate_artifact_hashes(package_dir, artifacts, settings, verbose=verbose)
-    artifacts.append(settings.get('artifacts_filename', 'ARTIFACTS'))
+    artifacts.add(settings.get('artifacts_filename', 'ARTIFACTS'))
 
     if options.get('do_sign'):
         sign_package(package_dir, settings, options=options, verbose=verbose)
+        artifacts.add(settings.get('artifacts_filename', 'ARTIFACTS') + '.SIG')
 
     with ZipFile(os.path.join(build_path, dist_filename), 'w') as dist_zip:
         for artifact in artifacts:
             dist_zip.write(os.path.join(package_dir, artifact), arcname=artifact)
-
-
-def read_chunks(file, size=io.DEFAULT_BUFFER_SIZE):
-    """Yield pieces of data from a file-like object until EOF."""
-    while True:
-        chunk = file.read(size)
-        if not chunk:
-            break
-        yield chunk
 
 
 def generate_artifact_hashes(package_dir, artifacts, settings, verbose=False):
@@ -100,29 +95,26 @@ def generate_artifact_hashes(package_dir, artifacts, settings, verbose=False):
     :return: None
     """
 
-    def _hash_of_file(path, algorithm):
-        """Return the hash digest of a file."""
-        with open(path, 'rb') as archive:
-            hash = hashlib.new(algorithm)
-            for chunk in read_chunks(archive):
-                hash.update(chunk)
-        return hash.hexdigest()
-
     artifacts_fn = settings.get('artifacts_filename', 'ARTIFACTS')
     algorithm = settings.get('hash_algorithm', 'sha256')
     if algorithm not in hashlib.algorithms_guaranteed:
         raise
 
+    # save content of the artifacts file
+    # A line is "README.md,sha256=d831....ccf79a,336"
+    #            ^filename ^algo  ^hash          ^size in bytes
     artifacts_content = []
 
     for af in artifacts:
-        af_fp = os.path.join(package_dir, af)
-        artifacts_content.append('{},{}={},{}\n'.format(
-            af,
-            algorithm,
-            _hash_of_file(af_fp, algorithm=algorithm),
-            os.stat(af_fp).st_size
-        ))
+        # we do not need to create a hash from the ARTIFACTS and ARTIFACTS.SIG file if they are present in the list
+        if af not in [artifacts_fn, artifacts_fn + '.SIG']:
+            af_fp = os.path.join(package_dir, af)
+            artifacts_content.append('{},{}={},{}\n'.format(
+                af,
+                algorithm,
+                hash_of_file(af_fp, algorithm=algorithm),
+                os.stat(af_fp).st_size
+            ))
 
     create_file(os.path.join(package_dir, artifacts_fn),
                 content=artifacts_content,
@@ -135,26 +127,108 @@ def sign_package(package_dir, settings, options=None, verbose=False):
 
     :param package_dir: directory fullpath of the package
     :param settings: settings object
+    :param options: commandline options dictionary passed down.
     :param verbose: be verbose (or not)
     :return: None
     """
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
+    gpg = get_gpg()
 
-    import gnupg
-    logger = logging.getLogger('gnupg')
-    gpg = gnupg.GPG()  # binary='/usr/local/bin/gpg')
+    if options.get('sign_keyid') is None:
+        options['sign_keyid'] = click.prompt("Provide Key ID to sign package with")
+    if options.get('sign_passphrase') is None:
+        options['sign_passphrase'] = click.prompt("Provide Passphrase", hide_input=True)
 
     echo_info('Signing package contents')
 
-    with open(os.path.join(package_dir, settings.get('artifacts_filename'))) as fp:
-        results = gpg.sign_file(fp,
+    with open(os.path.join(package_dir, settings.get('artifacts_filename', ARTIFACTS_FILENAME)), 'rb') as fd:
+        results = gpg.sign_file(fd,
                                 keyid=options.get('sign_keyid'),
                                 passphrase=options.get('sign_passphrase'),
                                 detach=True,
-                                output=settings.get('artifacts_filename') + '.SIG')
+                                output=settings.get('artifacts_sig_filename', ARTIFACTS_SIG_FILENAME)
+                                )
+    pprint(results.__dict__)
+
+    if results and results.status is not None:
+        echo_info("Signed package contents: {}".format(results.status))
+    else:
+        failure_text = results.stderr.split("\n")[-2]
+        echo_failure("Could not sign the package contents: '{}'".format(failure_text))
+        sys.exit(1)
 
     if verbose:
-        echo_info('Successfully signed the package contents.')
-        from pprint import pprint
-        pprint(results.__dict__)
+        echo_success('Successfully signed the package contents.')
+
+    check_signature(package_dir, settings, verbose=verbose)
+    check_artifacts_hashes(package_dir, settings, options=options, verbose=verbose)
+
+
+def check_signature(package_dir, settings, verbose=False):
+    """
+    Check signature of the package.
+
+    :param package_dir: directory fullpath of the package
+    :param settings: settings object
+    :param verbose: be verbose (or not)
+    :return: None
+    """
+    gpg = get_gpg()
+    artifacts_fp = os.path.join(package_dir, settings.get('artifacts_filename', ARTIFACTS_FILENAME))
+    artifacts_sig_fp = os.path.join(package_dir, settings.get('artifacts_sig_filename', ARTIFACTS_SIG_FILENAME))
+
+    with open(artifacts_sig_fp, 'rb') as sig_fd:
+        results = gpg.verify_file(sig_fd, data_filename=artifacts_fp)
+
+    if results.valid:
+        echo_info("Checked signature and is valid")
+        echo_info("Signed with: '{}'".format(results.username))
+    elif not results.valid:
+        echo_failure("Signature of the package is invalid")
+        echo_failure(pprint(results.__dict__))
+        sys.exit(1)
+
+
+def check_artifacts_hashes(package_dir, settings, options=None, verbose=False):
+    """
+    Check the hashes of the artifacts in the package.
+
+    :param package_dir: directory fullpath of the package
+    :param settings: settings object
+    :param options: commandline options dictionary passed down.
+    :param verbose: be verbose (or not)
+    :return:
+    """
+    artifacts_fn = settings.get('artifacts_filename', ARTIFACTS_FILENAME)
+    algorithm = settings.get('hash_algorithm', 'sha256')
+    if algorithm not in hashlib.algorithms_guaranteed:
+        raise
+
+    with open(artifacts_fn, 'r') as fd:
+        artifacts = fd.readlines()
+
+    fails = []
+
+    # process the file contents
+    # A line is "README.md,sha256=d831....ccf79a,336"
+    #            ^filename ^algo  ^hash          ^size in bytes
+    for af in artifacts:
+        filename, hash, orig_size = af.split(',')
+        algorithm, orig_hash = hash.split('=')
+        fp = os.path.join(package_dir, filename)
+        if os.path.exists(fp):
+            found_hash = hash_of_file(fp, algorithm)
+            found_size = os.stat(fp).st_size
+            if found_hash != orig_hash.strip() or found_size != int(orig_size.strip()):
+                fails.append("File '{}' is changed in the package.".format(filename))
+                fails.append("File '{}' original checksum: '{}', found: '{}'".format(filename, orig_hash, found_hash))
+                fails.append("File '{}' original size: {}, found: {}".format(filename, orig_size, found_size))
+        else:
+            fails.append("File '{}' does not exist".format(filename))
+
+    if fails:
+        echo_failure('The package has been changed after building the package.')
+        for fail in fails:
+            print(fail)
+        sys.exit(1)
+    else:
+        echo_info("Package contents verified")

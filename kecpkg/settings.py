@@ -4,14 +4,19 @@ from collections import OrderedDict
 from copy import deepcopy
 
 import sys
+
+from appdirs import user_data_dir
 from atomicwrites import atomic_write
 
-from kecpkg.commands.utils import echo_failure
-from kecpkg.utils import ensure_dir_exists, create_file, get_package_dir
+from kecpkg.utils import ensure_dir_exists, create_file, get_package_dir, echo_failure
 
 SETTINGS_FILENAME = '.kecpkg_settings.json'
 SETTINGS_FILE = os.path.join(os.getcwd(), SETTINGS_FILENAME)
 ARTIFACTS_FILENAME = 'ARTIFACTS'
+ARTIFACTS_SIG_FILENAME = 'ARTIFACTS.SIG'
+
+# using the appdirs.user_data_dir to manage user data on various platforms.
+GNUPG_KECPKG_HOME = os.path.join(user_data_dir('kecpkg','KE-works BV'), '.gnupg')
 
 DEFAULT_SETTINGS = OrderedDict([
     ('version', '0.0.1'),
@@ -23,6 +28,7 @@ DEFAULT_SETTINGS = OrderedDict([
     ('build_dir', 'dist'),
     ('requirements_filename', 'requirements.txt'),
     ('artifacts_filename', ARTIFACTS_FILENAME),
+    ('artifacts_sig_filename', ARTIFACTS_SIG_FILENAME),
     ('hash_algorithm', 'sha256')
 ])
 

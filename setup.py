@@ -52,6 +52,8 @@ setup(
         'atomicwrites',
         'jinja2',
         'pykechain>=2.0.0',
+        'appdirs',
+        'tabulate',
         'python-gnupg'
     ),
 

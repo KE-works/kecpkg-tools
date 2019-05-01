@@ -4,10 +4,10 @@ import sys
 import click
 
 from kecpkg.commands.config import process_additional_exclude_paths
-from kecpkg.commands.utils import echo_failure, CONTEXT_SETTINGS, echo_info, echo_success
+from kecpkg.commands.utils import CONTEXT_SETTINGS
 from kecpkg.create import create_package, create_venv, pip_install_venv
 from kecpkg.settings import load_settings, copy_default_settings, save_settings, SETTINGS_FILENAME
-from kecpkg.utils import normalise_name
+from kecpkg.utils import normalise_name, echo_success, echo_failure, echo_info
 
 
 @click.command(short_help="Create a new kecpkg SIM script package",
