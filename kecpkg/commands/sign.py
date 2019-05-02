@@ -1,5 +1,7 @@
 import os
+import re
 import sys
+from datetime import datetime
 from pprint import pprint
 
 import click
@@ -17,7 +19,7 @@ from kecpkg.utils import get_package_dir, remove_path, echo_info, echo_success
               help="path to the setting file (default `{}`".format(SETTINGS_FILENAME),
               type=click.Path(exists=True), default=SETTINGS_FILENAME)
 @click.option('--keyid', '--key-id', '-k', 'sign_keyid',
-              help="ID of the cryptographic key to do the sign the contents of the package. "
+              help="ID (name, email, KeyID) of the cryptographic key to do the sign the contents of the package. "
                    "Use in combination with `--sign`")
 @click.option('--passphrase', '-p', 'sign_passphrase', hide_input=True,
               help="Passphrase of the cryptographic key to sing the contents of the package. "
@@ -47,18 +49,28 @@ def sign(package=None, **options):
 
     if options.get('do_list'):
         echo_info("Listing all keys from the KECPKG keyring")
-        result = gpg.list_keys(secret=False)
+        result = gpg.list_keys(secret=True)
         if result:
             pprint(result.__dict__)
-            from tabulate import tabulate
 
-            print(tabulate(
-                [(r.get('keyid'), r.get('uids'), r.get('fingerprint')) for r in result],
-                headers=("KeyID", "Identity", "Fingerprint")
-            ))
+            from tabulate import tabulate
+            print(tabulate([parse_key_uids(r.get('uids')[0]) + [r.get('keyid'), str(datetime.fromtimestamp(int(r.get('expires'))))]
+                     for
+                     r in result], headers=("Name", "Comment", "E-mail", "Expires", "KeyID")))
 
     if options.get('add_key_file'):
         echo_info("Importing private keys into KECPKG keyring from '{}'".format(options.get('add_key_file')))
         # with open(os.path.abspath(options.get('add_key_file')), 'rb') as fd:
         result = gpg.import_keys(open(os.path.abspath(options.get('add_key_file')), 'rb').read())
         pprint(result.__dict__)
+
+
+def parse_key_uids(uids):
+    """Parse GPG key uids into Name, Comment and email.
+
+    :return: tuple with (name,comment,email)
+    """
+
+    uids_pattern = r"(.+) \((.+)\) <(.+)>"
+    match = re.match(uids_pattern, uids)
+    return list(match.groups())

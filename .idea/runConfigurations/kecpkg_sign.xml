@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="kecpkg upload" type="PythonConfigurationType" factoryName="Python" singleton="true">
+  <configuration default="false" name="kecpkg sign" type="PythonConfigurationType" factoryName="Python">
     <module name="kecpkg-tools" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
@@ -22,7 +22,7 @@
       </ENTRIES>
     </EXTENSION>
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/kecpkg/__main__.py" />
-    <option name="PARAMETERS" value="upload some_pkg" />
+    <option name="PARAMETERS" value="sign --list" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />
