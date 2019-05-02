@@ -10,7 +10,7 @@ from click.testing import CliRunner
 
 
 class BaseTestCase(TestCase):
-    def SetUp(self):
+    def setUp(self):
         self.runner = CliRunner()
 
     def assertExists(self, path):
@@ -20,7 +20,7 @@ class BaseTestCase(TestCase):
 def temp_chdir(cwd=None):
     if six.PY3:
         from tempfile import TemporaryDirectory
-        with TemporaryDirectory() as tempwd:
+        with TemporaryDirectory(prefix="kecpkg_") as tempwd:
             origin = cwd or os.getcwd()
             os.chdir(tempwd)
 
@@ -30,7 +30,7 @@ def temp_chdir(cwd=None):
                 os.chdir(origin)
     else:
         from tempfile import mkdtemp
-        tempwd = mkdtemp()
+        tempwd = mkdtemp(prefix="kecpkg_")
         origin=cwd or os.getcwd()
         os.chdir(tempwd)
         try:

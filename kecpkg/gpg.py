@@ -1,7 +1,9 @@
 import hashlib
 import logging
 import os
+import re
 import subprocess
+from datetime import datetime
 
 import gnupg
 
@@ -49,3 +51,44 @@ def get_gpg():
         __gpg = gnupg.GPG(gpgbinary=gpg_bin, gnupghome=GNUPG_KECPKG_HOME)
 
     return __gpg
+
+
+def list_keys(gpg):
+    """
+    List all keys from the KECPKG keystore and return it as a list of list.
+
+    :param gpg: GPG object
+    :return: list of [name, comment, email, expires(str), fingerprint] for each key in the keystore
+    """
+    result = gpg.list_keys(secret=True)
+    key_list = []
+    for r in result:
+        uids = parse_key_uids(r.get('uids'))
+        row = [
+            uids.get('name'),
+            uids.get('comment'),
+            uids.get('email'),
+            str(datetime.fromtimestamp(int(r.get('expires')))),
+            r.get('fingerprint')
+        ]
+        key_list.append(row)
+    return key_list
+
+
+def parse_key_uids(uids):
+    """
+    Parse GPG key uids into a dictionary with Name, Comment and email.
+
+    If the uids is a listof a (single) uids, the uids will be unpacked from the list.
+    example uids: `['KE-works BV (KECPKG SIGAUTH TEST KEY) <hostmaster@ke-works.com>']`
+
+    :param uids: the uids string of a GPG key.
+    :return: dict with the keys: {name=..., comment=..., email=...}
+    """
+    uids_pattern = r"(?P<name>.+) \((?P<comment>.+)\)( <(?P<email>.+)>)?"
+    if isinstance(uids, list) and len(uids) == 1:
+        uids = uids[0]
+
+    match = re.match(uids_pattern, uids)
+
+    return match.groupdict()
