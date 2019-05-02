@@ -119,18 +119,12 @@ def get_package_dir(package_name=None, fail=True):
         else:
             return None
 
-    if package_name is None and fail:
-        echo_failure("Could not find the package dir from a package 'None'")
-        sys.exit(1)
-    elif package_name is None:
-        return None
-
     package_dir = _inner(os.getcwd())
-    if not package_dir:
+    if not package_dir and package_name is not None:
         package_dir = _inner(os.path.join(os.getcwd(), package_name))
-    if not package_dir:
+    if not package_dir and package_name is not None:
         package_dir = _inner(package_name)
-    if not package_dir:
+    if not package_dir and package_name is not None:
         echo_failure('This does not seem to be a package in path `{}` - please check that there is a '
                      '`package_info.json` or a `{}`'.format(package_dir, SETTINGS_FILENAME))
         if fail:
