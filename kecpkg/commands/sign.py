@@ -1,12 +1,13 @@
 import os
 import sys
+from pprint import pprint
 
 import click
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS
 from kecpkg.gpg import get_gpg, list_keys
-from kecpkg.settings import SETTINGS_FILENAME, GNUPG_KECPKG_HOME
-from kecpkg.utils import remove_path, echo_info, echo_success, echo_failure
+from kecpkg.settings import SETTINGS_FILENAME, GNUPG_KECPKG_HOME, load_settings, DEFAULT_SETTINGS
+from kecpkg.utils import remove_path, echo_info, echo_success, echo_failure, get_package_dir
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,
@@ -26,6 +27,8 @@ from kecpkg.utils import remove_path, echo_info, echo_success, echo_failure
 @click.option('--delete-key', '--deletekey', 'do_delete_key',
               help="Delete key by its fingerprint permanently from the KECPKG keyring. To retrieve the full "
                    "fingerprint of the key, use the `--list` option and look at the 'fingerprint' section.")
+@click.option('--create-key', '--createkey', 'do_create_key', is_flag=True,
+              help="Create secret key and add it to the KECPKG keyring.")
 @click.option('--clear', 'do_clear', is_flag=True, default=False,
               help="Clear all keys from the KECPKG keyring")
 @click.option('--list', '-l', 'do_list', is_flag=True,
@@ -94,6 +97,51 @@ def sign(package=None, **options):
             sys.exit(0)
         sys.exit(1)
 
+    def _do_create_key(gpg, options):
+        echo_info("Will create a secret key and store it into the KECPKG keyring.")
+        package_dir = get_package_dir(package_name=package, fail=False)
+        settings = DEFAULT_SETTINGS
+        if package_dir is not None:
+            package_name = os.path.basename(package_dir)
+            echo_info('Package `{}` has been selected'.format(package_name))
+            settings = load_settings(package_dir=package_dir, settings_filename=options.get('settings_filename'))
+
+        key_info = {
+            'name_real': None,
+            'name_comment': None,
+            'name_email': None,
+            'expire_date': None,
+            'key_type': 'RSA',
+            'key_length': 4096,
+            'key_usage': '',
+            'subkey_type': 'RSA',
+            'subkey_length': 4096,
+            'subkey_usage': 'encrypt,sign,auth',
+            'passphrase': ''}
+
+        key_info['name_real'] = click.prompt("Name", default=settings.get('name'))
+        key_info['name_email'] = click.prompt("Email", default=settings.get('email'))
+        key_info['name_comment'] = click.prompt("Comment", default="KECPKG SIGNING KEY")
+        key_info['expire_date'] = click.prompt("Expiration in months", default=12, value_proc=lambda i: "{}m".format(i))
+        passphrase = click.prompt("Passphrase", hide_input=True)
+        passphrase_confirmed = click.prompt("Confirm passphrase", hide_input=True)
+        if passphrase == passphrase_confirmed:
+            key_info['passphrase'] = passphrase
+        else:
+            raise ValueError("The passphrases did not match.")
+
+        echo_info("Creating the secret key '{name_real} ({name_comment}) <{name_email}>'".format(**key_info))
+        echo_info("Please move around mouse or generate other activity to introduce sufficient entropy. "
+                  "This might take a minute...")
+        result = gpg.gen_key(gpg.gen_key_input(**key_info))
+        pprint(result.__dict__)
+        if result and result.stderr.find('KEY_CREATED'):
+            echo_success("The key is succesfully created")
+            _do_list(gpg=gpg)
+        echo_failure("Could not generate the key due to an error: '{}'".format(result.stderr))
+        sys.exit(1)
+
+
     if options.get('do_clear'):
         _do_clear()
 
@@ -106,3 +154,6 @@ def sign(package=None, **options):
 
     if options.get('do_delete_key'):
         _do_delete_key(gpg=get_gpg(), options=options)
+
+    if options.get('do_create_key'):
+        _do_create_key(gpg=get_gpg(), options=options)
