@@ -10,29 +10,35 @@ from kecpkg.settings import SETTINGS_FILENAME, GNUPG_KECPKG_HOME, load_settings,
 from kecpkg.utils import remove_path, echo_info, echo_success, echo_failure, get_package_dir
 
 
+
+
 @click.command(context_settings=CONTEXT_SETTINGS,
                short_help="Perform package signing and key management.")
 @click.argument('package', required=False)
 @click.option('--settings', '--config', '-s', 'settings_filename',
               help="path to the setting file (default `{}`".format(SETTINGS_FILENAME),
               type=click.Path(), default=SETTINGS_FILENAME)
-@click.option('--keyid', '--key-id', '-k', 'sign_keyid',
-              help="ID (name, email, KeyID) of the cryptographic key to do the sign the contents of the package. "
-                   "Use in combination with `--sign`")
-@click.option('--passphrase', '-p', 'sign_passphrase', hide_input=True,
-              help="Passphrase of the cryptographic key to sign the contents of the package. "
-                   "Use in combination with `--sign` and `--keyid`")
-@click.option('--add-key', '--addkey', '-a', 'add_key_file', type=click.Path(exists=True),
-              help="Add keyfile (in .asc) to the KECPKG keyring which will be used for signing")
-@click.option('--delete-key', '--deletekey', 'do_delete_key',
+@click.option('--keyid', '--key-id', '-k', 'keyid',
+              help="ID (name, email, KeyID) of the cryptographic key to do the operation with. ")
+# @click.option('--passphrase', '-p', 'sign_passphrase', hide_input=True,
+#               help="Passphrase of the cryptographic key to sign the contents of the package. "
+#                    "Use in combination with `--sign` and `--keyid`")
+@click.option('--import-key', '--import', '-i', 'do_import', type=click.Path(exists=True),
+              help="Import secret keyfile (in .asc) to the KECPKG keyring which will be used for signing. "
+                   "You can export a created key in gpg with `gpg -a --export-secret-key [keyID] > secret_key.asc`.")
+@click.option('--delete-key', '-d', 'do_delete_key',
               help="Delete key by its fingerprint permanently from the KECPKG keyring. To retrieve the full "
                    "fingerprint of the key, use the `--list` option and look at the 'fingerprint' section.")
-@click.option('--create-key', '--createkey', 'do_create_key', is_flag=True,
+@click.option('--create-key', '-c', 'do_create_key', is_flag=True,
               help="Create secret key and add it to the KECPKG keyring.")
-@click.option('--clear', 'do_clear', is_flag=True, default=False,
+@click.option('--export-key', '--export','-e', 'do_export_key', is_flag=True,
+              help="Export public key with `--keyid KeyID` in .ASC format for public distribution.")
+@click.option('--clear-keyring', 'do_clear', is_flag=True, default=False,
               help="Clear all keys from the KECPKG keyring")
 @click.option('--list', '-l', 'do_list', is_flag=True,
               help="List all available keys in the KECPKG keyring")
+@click.option('--yes', '-y', 'do_yes', is_flag=True,
+              help="Don't ask questions, just do it.")
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
 def sign(package=None, **options):
     """Sign the package."""
@@ -45,25 +51,33 @@ def sign(package=None, **options):
 
     # first subcommands that do not require package to be selected.
 
-    def _do_clear():
+    def _do_clear(options):
         echo_info("Clearing all keys from the KECPKG keyring")
-        remove_path(GNUPG_KECPKG_HOME)
-        echo_success("Completed")
-        sys.exit(0)
+        if not options.get('do_yes'):
+            options['do_yes'] = click.confirm("Are you sure you want to clear the KECPKG keyring?", default=False)
+        if options.get('do_yes'):
+            remove_path(GNUPG_KECPKG_HOME)
+            echo_success("Completed")
+            sys.exit(0)
+        else:
+            echo_failure("Not removing the KECPKG keyring")
+            sys.exit(1)
 
-    def _do_list(gpg):
+    def _do_list(gpg, explain=False):
+        if explain: echo_info("Listing all keys from the KECPKG keyring")
         result = gpg.list_keys(secret=True)
         if len(result):
             from tabulate import tabulate
             print(tabulate(list_keys(gpg=gpg), headers=("Name", "Comment", "E-mail", "Expires", "Fingerprint")))
         else:
-            echo_info("No keys found in KECPKG keyring. Use `--add-key` to add a private key to the KECPKG keyring.")
-            sys.exit(1)
-        sys.exit(0)
+            if explain:
+                echo_info("No keys found in KECPKG keyring. Use `--import-key` or `--create-key` to add a "
+                          "secret key to the KECPKG keyring in order to sign KECPKG's.")
+                sys.exit(1)
 
-    def _add_key_file(gpg, options):
-        echo_info("Importing secret key into KECPKG keyring from '{}'".format(options.get('add_key_file')))
-        result = gpg.import_keys(open(os.path.abspath(options.get('add_key_file')), 'rb').read())
+    def _do_import(gpg, options):
+        echo_info("Importing secret key into KECPKG keyring from '{}'".format(options.get('do_import')))
+        result = gpg.import_keys(open(os.path.abspath(options.get('do_import')), 'rb').read())
         # pprint(result.__dict__)
         if result and result.sec_imported:
             echo_success("Succesfully imported secret key into the KECPKG keystore")
@@ -76,7 +90,7 @@ def sign(package=None, **options):
             sys.exit(1)
         echo_failure("Did not import a secret key into the KECPKG keystore. Is something wrong "
                      "with the file: '{}'? Are you sure it is a ASCII file containing a "
-                     "private key block?".format(options.get('add_key_file')))
+                     "private key block?".format(options.get('do_import')))
         sys.exit(1)
 
     def _do_delete_key(gpg, options):
@@ -141,19 +155,33 @@ def sign(package=None, **options):
         echo_failure("Could not generate the key due to an error: '{}'".format(result.stderr))
         sys.exit(1)
 
+    def _do_export_key(gpg, options):
+        """Exporting public key"""
+        echo_info("Exporting public key")
+        if options.get('keyid') is None:
+            _do_list(gpg=gpg)
+            options['keyid'] = click.prompt("Provide KeyId (name, comment, email, fingerprint) of the key to export")
+        result = gpg.export_keys(keyids=[options.get('keyid')], secret=False, armor=True)
+        pprint(result)
+        if result:
+            sys.exit(0)
+        echo_failure("Could not export key")
+        sys.exit(1)
 
     if options.get('do_clear'):
-        _do_clear()
+        _do_clear(options=options)
 
     if options.get('do_list'):
-        echo_info("Listing all keys from the KECPKG keyring")
-        _do_list(gpg=get_gpg())
+        _do_list(gpg=get_gpg(), explain=True)
 
-    if options.get('add_key_file'):
-        _add_key_file(gpg=get_gpg(), options=options)
+    if options.get('do_import'):
+        _do_import(gpg=get_gpg(), options=options)
 
     if options.get('do_delete_key'):
         _do_delete_key(gpg=get_gpg(), options=options)
 
     if options.get('do_create_key'):
         _do_create_key(gpg=get_gpg(), options=options)
+
+    if options.get('do_export_key'):
+        _do_export_key(gpg=get_gpg(), options=options)
