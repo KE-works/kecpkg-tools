@@ -6,6 +6,7 @@ from zipfile import ZipFile
 
 import click as click
 
+from kecpkg.commands.sign import verify_signature, verify_artifacts_hashes
 from kecpkg.commands.utils import CONTEXT_SETTINGS
 from kecpkg.gpg import hash_of_file, get_gpg
 from kecpkg.settings import load_settings, SETTINGS_FILENAME, ARTIFACTS_SIG_FILENAME, ARTIFACTS_FILENAME
@@ -159,76 +160,7 @@ def sign_package(package_dir, settings, options=None, verbose=False):
     if verbose:
         echo_success('Successfully signed the package contents.')
 
-    check_signature(package_dir, settings, verbose=verbose)
-    check_artifacts_hashes(package_dir, settings, options=options, verbose=verbose)
+    verify_signature(package_dir, ARTIFACTS_FILENAME, ARTIFACTS_SIG_FILENAME)
+    verify_artifacts_hashes(package_dir, ARTIFACTS_FILENAME)
 
 
-def check_signature(package_dir, settings, verbose=False):
-    """
-    Check signature of the package.
-
-    :param package_dir: directory fullpath of the package
-    :param settings: settings object
-    :param verbose: be verbose (or not)
-    :return: None
-    """
-    gpg = get_gpg()
-    artifacts_fp = os.path.join(package_dir, settings.get('artifacts_filename', ARTIFACTS_FILENAME))
-    artifacts_sig_fp = os.path.join(package_dir, settings.get('artifacts_sig_filename', ARTIFACTS_SIG_FILENAME))
-
-    with open(artifacts_sig_fp, 'rb') as sig_fd:
-        results = gpg.verify_file(sig_fd, data_filename=artifacts_fp)
-
-    if results.valid:
-        echo_info("Checked signature and is valid")
-        echo_info("Signed with: '{}'".format(results.username))
-    elif not results.valid:
-        echo_failure("Signature of the package is invalid")
-        echo_failure(pprint(results.__dict__))
-        sys.exit(1)
-
-
-def check_artifacts_hashes(package_dir, settings, options=None, verbose=False):
-    """
-    Check the hashes of the artifacts in the package.
-
-    :param package_dir: directory fullpath of the package
-    :param settings: settings object
-    :param options: commandline options dictionary passed down.
-    :param verbose: be verbose (or not)
-    :return:
-    """
-    artifacts_fn = settings.get('artifacts_filename', ARTIFACTS_FILENAME)
-    algorithm = settings.get('hash_algorithm', 'sha256')
-    if algorithm not in hashlib.algorithms_guaranteed:
-        raise
-
-    with open(artifacts_fn, 'r') as fd:
-        artifacts = fd.readlines()
-
-    fails = []
-
-    # process the file contents
-    # A line is "README.md,sha256=d831....ccf79a,336"
-    #            ^filename ^algo  ^hash          ^size in bytes
-    for af in artifacts:
-        filename, hash, orig_size = af.split(',')
-        algorithm, orig_hash = hash.split('=')
-        fp = os.path.join(package_dir, filename)
-        if os.path.exists(fp):
-            found_hash = hash_of_file(fp, algorithm)
-            found_size = os.stat(fp).st_size
-            if found_hash != orig_hash.strip() or found_size != int(orig_size.strip()):
-                fails.append("File '{}' is changed in the package.".format(filename))
-                fails.append("File '{}' original checksum: '{}', found: '{}'".format(filename, orig_hash, found_hash))
-                fails.append("File '{}' original size: {}, found: {}".format(filename, orig_size, found_size))
-        else:
-            fails.append("File '{}' does not exist".format(filename))
-
-    if fails:
-        echo_failure('The package has been changed after building the package.')
-        for fail in fails:
-            print(fail)
-        sys.exit(1)
-    else:
-        echo_info("Package contents verified")

@@ -3,13 +3,13 @@ import sys
 from pprint import pprint
 
 import click
+from pykechain.utils import temp_chdir
 
 from kecpkg.commands.utils import CONTEXT_SETTINGS
-from kecpkg.gpg import get_gpg, list_keys
-from kecpkg.settings import SETTINGS_FILENAME, GNUPG_KECPKG_HOME, load_settings, DEFAULT_SETTINGS
-from kecpkg.utils import remove_path, echo_info, echo_success, echo_failure, get_package_dir
-
-
+from kecpkg.gpg import get_gpg, list_keys, hash_of_file
+from kecpkg.settings import SETTINGS_FILENAME, GNUPG_KECPKG_HOME, load_settings, DEFAULT_SETTINGS, ARTIFACTS_FILENAME, \
+    ARTIFACTS_SIG_FILENAME
+from kecpkg.utils import remove_path, echo_info, echo_success, echo_failure, get_package_dir, unzip_package
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,
@@ -31,12 +31,14 @@ from kecpkg.utils import remove_path, echo_info, echo_success, echo_failure, get
                    "fingerprint of the key, use the `--list` option and look at the 'fingerprint' section.")
 @click.option('--create-key', '-c', 'do_create_key', is_flag=True,
               help="Create secret key and add it to the KECPKG keyring.")
-@click.option('--export-key', '--export','-e', 'do_export_key', type=click.Path(), default="pub_key.asc",
+@click.option('--export-key', '--export', '-e', 'do_export_key', type=click.Path(),
               help="Export public key to filename with `--keyid KeyID` in .ASC format for public distribution.")
 @click.option('--clear-keyring', 'do_clear', is_flag=True, default=False,
               help="Clear all keys from the KECPKG keyring")
 @click.option('--list', '-l', 'do_list', is_flag=True,
               help="List all available keys in the KECPKG keyring")
+@click.option('--verify-kecpkg', 'do_verify_kecpkg', type=click.Path(exists=True),
+              help="Verify contents and signature of an existing kecpkg.")
 @click.option('--yes', '-y', 'do_yes', is_flag=True,
               help="Don't ask questions, just do it.")
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
@@ -172,21 +174,111 @@ def sign(package=None, **options):
         echo_failure("Could not export key")
         sys.exit(1)
 
-    if options.get('do_clear'):
-        _do_clear(options=options)
+    def _do_verify_kecpkg(gpg, options):
+        echo_info("Verify the contents of the KECPKG and if the KECPKG is signed with a valid signature.")
 
-    if options.get('do_list'):
-        _do_list(gpg=get_gpg(), explain=True)
+        current_working_directory = os.getcwd()
+
+        with temp_chdir() as d:
+            unzip_package(package_path=os.path.join(current_working_directory, options.get('do_verify_kecpkg')),
+                          target_path=d)
+            verify_signature(d, artifacts_filename=ARTIFACTS_FILENAME, artifacts_sig_filename=ARTIFACTS_SIG_FILENAME)
+            verify_artifacts_hashes(d, artifacts_filename=ARTIFACTS_FILENAME)
         sys.exit(0)
 
-    if options.get('do_import'):
+    #
+    # Dispatcher to subfunctions
+    #
+
+    if options.get('do_clear'):
+        _do_clear(options=options)
+    elif options.get('do_list'):
+        _do_list(gpg=get_gpg(), explain=True)
+    elif options.get('do_import'):
         _do_import(gpg=get_gpg(), options=options)
-
-    if options.get('do_delete_key'):
+    elif options.get('do_delete_key'):
         _do_delete_key(gpg=get_gpg(), options=options)
-
-    if options.get('do_create_key'):
+    elif options.get('do_create_key'):
         _do_create_key(gpg=get_gpg(), options=options)
-
-    if options.get('do_export_key'):
+    elif options.get('do_export_key'):
         _do_export_key(gpg=get_gpg(), options=options)
+    elif options.get('do_verify_kecpkg'):
+        _do_verify_kecpkg(gpg=get_gpg(), options=options)
+    else:
+        sys.exit(500)
+    sys.exit(0)
+
+
+def verify_signature(package_dir, artifacts_filename, artifacts_sig_filename):
+    """
+    Check signature of the package.
+
+    :param package_dir: directory fullpath of the package
+    :param settings: settings object
+    :param verbose: be verbose (or not)
+    :return: None
+    """
+    gpg = get_gpg()
+    artifacts_fp = os.path.join(package_dir, artifacts_filename)
+    artifacts_sig_fp = os.path.join(package_dir, artifacts_sig_filename)
+    if not os.path.exists(artifacts_fp):
+        echo_failure("Artifacts file does not exist: '{}'".format(artifacts_filename))
+        sys.exit(1)
+    if not os.path.exists(artifacts_sig_fp):
+        echo_failure("Artifacts signature file does not exist: '{}'. Is the package signed?".
+                     format(artifacts_filename))
+        sys.exit(1)
+
+    with open(artifacts_sig_fp, 'rb') as sig_fd:
+        results = gpg.verify_file(sig_fd, data_filename=artifacts_fp)
+
+    if results.valid:
+        echo_info("Verified the signature and the signature is valid")
+        echo_info("Signed with: '{}'".format(results.username))
+    elif not results.valid:
+        echo_failure("Signature of the package is invalid")
+        echo_failure(pprint(results.__dict__))
+        sys.exit(1)
+
+
+def verify_artifacts_hashes(package_dir, artifacts_filename):
+    """
+    Check the hashes of the artifacts in the package.
+
+    :param package_dir: directory fullpath of the package
+    :param artifacts_filename: filename of the artifacts file
+    :return:
+    """
+    artifacts_fp = os.path.join(package_dir, artifacts_filename)
+    if not os.path.exists(artifacts_fp):
+        echo_failure("Artifacts file does not exist: '{}'".format(artifacts_filename))
+        sys.exit(1)
+
+    with open(artifacts_fp, 'r') as fd:
+        artifacts = fd.readlines()
+
+    # process the file contents
+    # A line is "README.md,sha256=d831....ccf79a,336"
+    #            ^filename ^algo  ^hash          ^size in bytes
+    fails = []
+    for af in artifacts:
+        filename, hash, orig_size = af.split(',')
+        algorithm, orig_hash = hash.split('=')
+        fp = os.path.join(package_dir, filename)
+        if os.path.exists(fp):
+            found_hash = hash_of_file(fp, algorithm)
+            found_size = os.stat(fp).st_size
+            if found_hash != orig_hash.strip() or found_size != int(orig_size.strip()):
+                fails.append("File '{}' is changed in the package.".format(filename))
+                fails.append("File '{}' original checksum: '{}', found: '{}'".format(filename, orig_hash, found_hash))
+                fails.append("File '{}' original size: {}, found: {}".format(filename, orig_size, found_size))
+        else:
+            fails.append("File '{}' does not exist".format(filename))
+
+    if fails:
+        echo_failure('The package has been changed after building the package.')
+        for fail in fails:
+            print(fail)
+        sys.exit(1)
+    else:
+        echo_info("Package contents succesfully verified.")

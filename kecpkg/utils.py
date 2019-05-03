@@ -224,6 +224,20 @@ def render_package_info(settings, package_dir, backup=True):
                                 entrypoint_func=settings.get('entrypoint_func')),
                    target_dir=package_dir)
 
+def unzip_package(package_path, target_path):
+    """
+    This function unzips the package in the target_path.
+    The package path has the full path of the zipped file.
+
+    For example: package_path = /workspace/ops.zip
+                 target_path = /workspace/target/
+    :param package_path: path of the package file
+    :param target_path: target path to unzip the package into
+    """
+    import zipfile
+    with zipfile.ZipFile(package_path, 'r') as zip_file:
+        zip_file.extractall(target_path)
+
 
 # Python Operation regarding Virtual environments
 # Graceously borrowed From hatch package.

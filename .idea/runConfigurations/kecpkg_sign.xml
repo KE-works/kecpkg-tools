@@ -7,7 +7,7 @@
       <env name="PYTHONUNBUFFERED" value="1" />
     </envs>
     <option name="SDK_HOME" value="" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/kecpkg" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/some_pkg" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -22,7 +22,7 @@
       </ENTRIES>
     </EXTENSION>
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/kecpkg/__main__.py" />
-    <option name="PARAMETERS" value="sign --list" />
+    <option name="PARAMETERS" value="sign --verify-kecpkg dist/some_pkg-0.0.1-py3.5.kecpkg" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />
