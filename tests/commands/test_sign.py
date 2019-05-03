@@ -33,15 +33,23 @@ TEST_SECRET_KEY_FINGERPRINT = "8D092FCC060BCC1E97CEC48987A177AAB2371E68"
 
 class TestCommandSign(BaseTestCase):
 
+    def _import_test_key(self):
+        with self.runner.isolated_filesystem() as d:
+            create_file('TESTKEY.asc', TEST_SECRET_KEY)
+            self.runner.invoke(kecpkg, ['sign', '--import-key', 'TESTKEY.asc'])
+    def tearDown(self):
+        super(TestCommandSign, self).tearDown()
+        self.runner.invoke(kecpkg, ['sign', '--delete-key', TEST_SECRET_KEY_FINGERPRINT])
+
     def test_sign_list_keys(self):
+        self._import_test_key()
         result = self.runner.invoke(kecpkg, ['sign', '--list'])
         self.assertIn(result.exit_code, [0,1], "Results of the run were: \n---\n{}\n---".format(result.output))
 
-    def test_add_key(self):
+    def test_import_key(self):
         with temp_chdir() as d:
-
             create_file('TESTKEY.asc', TEST_SECRET_KEY)
-            result = self.runner.invoke(kecpkg, ['sign', '--add-key', 'TESTKEY.asc'])
+            result = self.runner.invoke(kecpkg, ['sign', '--import-key', 'TESTKEY.asc'])
             self.assertEqual(result.exit_code, 0,  "Results of the run were: \n---\n{}\n---".format(result.output))
 
             #teardown
@@ -49,21 +57,16 @@ class TestCommandSign(BaseTestCase):
             self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
 
     def test_delete_key(self):
-        with self.runner.isolated_filesystem() as d:
-            create_file('TESTKEY.asc', TEST_SECRET_KEY)
-            self.runner.invoke(kecpkg, ['sign', '--add-key', 'TESTKEY.asc'])
+        self._import_test_key()
 
-
-            result = self.runner.invoke(kecpkg, ['sign', '--delete-key', TEST_SECRET_KEY_FINGERPRINT])
-            self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
+        result = self.runner.invoke(kecpkg, ['sign', '--delete-key', TEST_SECRET_KEY_FINGERPRINT])
+        self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
 
     def test_delete_key_wrong_fingerprint(self):
-        with self.runner.isolated_filesystem() as d:
-            create_file('TESTKEY.asc', TEST_SECRET_KEY)
-            self.runner.invoke(kecpkg, ['sign', '--add-key', 'TESTKEY.asc'])
+        self._import_test_key()
 
-            result = self.runner.invoke(kecpkg, ['sign', '--delete-key', 'THISISAWRONGFINGERPRINT'])
-            self.assertEqual(result.exit_code, 1, "Results of the run were: \n---\n{}\n---".format(result.output) )
+        result = self.runner.invoke(kecpkg, ['sign', '--delete-key', 'THISISAWRONGFINGERPRINT'])
+        self.assertEqual(result.exit_code, 1, "Results of the run were: \n---\n{}\n---".format(result.output) )
 
     def test_create_key(self):
         result = self.runner.invoke(kecpkg, ['sign', '--create-key'],
@@ -81,3 +84,13 @@ class TestCommandSign(BaseTestCase):
 
         result = self.runner.invoke(kecpkg, ['sign', '--delete-key', fingerprint])
         self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
+
+    def test_export_key(self):
+        self._import_test_key()
+
+        with self.runner.isolated_filesystem() as d:
+            result = self.runner.invoke(kecpkg, ['sign',
+                                                 '--export-key', 'out.asc',
+                                                 '--keyid', TEST_SECRET_KEY_FINGERPRINT])
+            self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
+            self.assertExists('out.asc')

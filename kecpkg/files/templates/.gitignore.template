@@ -97,3 +97,12 @@ pip-selfcheck.json
 .idea/**/gradle.xml
 .idea/**/libraries
 
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# GnuPG
+*.asc

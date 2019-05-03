@@ -31,8 +31,8 @@ from kecpkg.utils import remove_path, echo_info, echo_success, echo_failure, get
                    "fingerprint of the key, use the `--list` option and look at the 'fingerprint' section.")
 @click.option('--create-key', '-c', 'do_create_key', is_flag=True,
               help="Create secret key and add it to the KECPKG keyring.")
-@click.option('--export-key', '--export','-e', 'do_export_key', is_flag=True,
-              help="Export public key with `--keyid KeyID` in .ASC format for public distribution.")
+@click.option('--export-key', '--export','-e', 'do_export_key', type=click.Path(), default="pub_key.asc",
+              help="Export public key to filename with `--keyid KeyID` in .ASC format for public distribution.")
 @click.option('--clear-keyring', 'do_clear', is_flag=True, default=False,
               help="Clear all keys from the KECPKG keyring")
 @click.option('--list', '-l', 'do_list', is_flag=True,
@@ -88,6 +88,7 @@ def sign(package=None, **options):
                          "in place and was unchanged")
             _do_list(gpg=gpg)
             sys.exit(1)
+
         echo_failure("Did not import a secret key into the KECPKG keystore. Is something wrong "
                      "with the file: '{}'? Are you sure it is a ASCII file containing a "
                      "private key block?".format(options.get('do_import')))
@@ -109,6 +110,8 @@ def sign(package=None, **options):
             echo_success("Succesfully deleted key")
             _do_list(gpg=gpg)
             sys.exit(0)
+
+        echo_failure("Could not delete key.")
         sys.exit(1)
 
     def _do_create_key(gpg, options):
@@ -147,6 +150,8 @@ def sign(package=None, **options):
         if result and result.stderr.find('KEY_CREATED'):
             echo_success("The key is succesfully created")
             _do_list(gpg=gpg)
+            sys.exit(0)
+
         echo_failure("Could not generate the key due to an error: '{}'".format(result.stderr))
         sys.exit(1)
 
@@ -157,9 +162,13 @@ def sign(package=None, **options):
             _do_list(gpg=gpg)
             options['keyid'] = click.prompt("Provide KeyId (name, comment, email, fingerprint) of the key to export")
         result = gpg.export_keys(keyids=[options.get('keyid')], secret=False, armor=True)
-        pprint(result)
-        if result:
+
+        if result is not None:
+            with open(options.get('do_export_key'), 'w') as fd:
+                fd.write(result)
+            echo_success("Sucessfully written public key to '{}'".format(options.get('do_export_key')))
             sys.exit(0)
+
         echo_failure("Could not export key")
         sys.exit(1)
 
@@ -168,6 +177,7 @@ def sign(package=None, **options):
 
     if options.get('do_list'):
         _do_list(gpg=get_gpg(), explain=True)
+        sys.exit(0)
 
     if options.get('do_import'):
         _do_import(gpg=get_gpg(), options=options)
