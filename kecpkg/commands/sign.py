@@ -120,23 +120,18 @@ def sign(package=None, **options):
             echo_info('Package `{}` has been selected'.format(package_name))
             settings = load_settings(package_dir=package_dir, settings_filename=options.get('settings_filename'))
 
-        key_info = {
-            'name_real': None,
-            'name_comment': None,
-            'name_email': None,
-            'expire_date': None,
-            'key_type': 'RSA',
-            'key_length': 4096,
-            'key_usage': '',
-            'subkey_type': 'RSA',
-            'subkey_length': 4096,
-            'subkey_usage': 'encrypt,sign,auth',
-            'passphrase': ''}
+        key_info = {'name_real': click.prompt("Name", default=settings.get('name')),
+                    'name_comment': click.prompt("Comment", default="KECPKG SIGNING KEY"),
+                    'name_email': click.prompt("Email", default=settings.get('email')),
+                    'expire_date': click.prompt("Expiration in months", default=12,
+                                                value_proc=lambda i: "{}m".format(i)), 'key_type': 'RSA',
+                    'key_length': 4096,
+                    'key_usage': '',
+                    'subkey_type': 'RSA',
+                    'subkey_length': 4096,
+                    'subkey_usage': 'encrypt,sign,auth',
+                    'passphrase': ''}
 
-        key_info['name_real'] = click.prompt("Name", default=settings.get('name'))
-        key_info['name_email'] = click.prompt("Email", default=settings.get('email'))
-        key_info['name_comment'] = click.prompt("Comment", default="KECPKG SIGNING KEY")
-        key_info['expire_date'] = click.prompt("Expiration in months", default=12, value_proc=lambda i: "{}m".format(i))
         passphrase = click.prompt("Passphrase", hide_input=True)
         passphrase_confirmed = click.prompt("Confirm passphrase", hide_input=True)
         if passphrase == passphrase_confirmed:
