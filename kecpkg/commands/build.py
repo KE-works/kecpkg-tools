@@ -8,7 +8,7 @@ import click as click
 
 from kecpkg.commands.sign import verify_signature, verify_artifacts_hashes
 from kecpkg.commands.utils import CONTEXT_SETTINGS
-from kecpkg.gpg import hash_of_file, get_gpg
+from kecpkg.gpg import hash_of_file, get_gpg, tabulate_keys
 from kecpkg.settings import load_settings, SETTINGS_FILENAME, ARTIFACTS_SIG_FILENAME, ARTIFACTS_FILENAME
 from kecpkg.utils import ensure_dir_exists, remove_path, get_package_dir, get_artifacts_on_disk, render_package_info, \
     create_file, echo_success, echo_failure, echo_info
@@ -135,7 +135,8 @@ def sign_package(package_dir, settings, options=None, verbose=False):
     gpg = get_gpg()
 
     if options.get('sign_keyid') is None:
-        options['sign_keyid'] = click.prompt("Provide Key ID to sign package with")
+        tabulate_keys(gpg, explain=True)
+        options['sign_keyid'] = click.prompt("Provide Key (Name, Comment, Email, Fingerprint) to sign package with", default=settings.get('email'))
     if options.get('sign_passphrase') is None:
         options['sign_passphrase'] = click.prompt("Provide Passphrase", hide_input=True)
 

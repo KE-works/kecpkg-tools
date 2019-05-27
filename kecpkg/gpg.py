@@ -3,12 +3,13 @@ import logging
 import os
 import re
 import subprocess
+import sys
 from datetime import datetime
 
 import gnupg
 
 from kecpkg.settings import GNUPG_KECPKG_HOME
-from kecpkg.utils import ON_LINUX, ON_WINDOWS, ON_MACOS, echo_failure, read_chunks
+from kecpkg.utils import ON_LINUX, ON_WINDOWS, ON_MACOS, echo_failure, read_chunks, echo_info
 
 LOGLEVEL = logging.INFO
 
@@ -73,6 +74,26 @@ def list_keys(gpg):
         ]
         key_list.append(row)
     return key_list
+
+def tabulate_keys(gpg, explain=False):
+    """
+    List all keys in a table for printing on the CLI.
+
+    Will print a nice table of keys with Name, Comment, E-mail, Expires and Fingerprint.
+    If explain = Truem, it will exit with returncode 1 when no keys are present.
+
+    :param gpg: GPG objects
+    :param explain: With explain is True, more text is added and will exit(1) when no keys are present.
+    :return: None.
+    """
+    result = gpg.list_keys(secret=True)
+    if len(result):
+        from tabulate import tabulate
+        print(tabulate(list_keys(gpg=gpg), headers=("Name", "Comment", "E-mail", "Expires", "Fingerprint")))
+    else:
+        echo_info("No keys found in KECPKG keyring. Use `--import-key` or `--create-key` to add a "
+                  "secret key to the KECPKG keyring in order to sign KECPKG's.")
+        if explain: sys.exit(1)
 
 
 def parse_key_uids(uids):

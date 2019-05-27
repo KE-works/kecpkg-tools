@@ -20,7 +20,7 @@ GNUPG_KECPKG_HOME = os.path.join(user_data_dir('kecpkg','KE-works BV'), '.gnupg'
 
 DEFAULT_SETTINGS = OrderedDict([
     ('version', '0.0.1'),
-    ('pyversions', ['2.7', '3.5']),
+    ('pyversions', ['2.7', '3.5', '3.6']),
     ('python_version', '3.5'),
     ('venv_dir', 'venv'),
     ('entrypoint_script', 'script'),
