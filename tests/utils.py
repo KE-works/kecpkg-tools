@@ -16,6 +16,16 @@ class BaseTestCase(TestCase):
     def assertExists(self, path):
         self.assertTrue(os.path.exists(path), "Path `{}` does not exists".format(path))
 
+def is_travis():
+    """Predicate to determine if the test is running in the context of Travis."""
+    return "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true"
+
+def is_python27():
+    """Predicate to determine if the runtime version of python is version 2."""
+    import sys
+    return sys.version_info <= (2, 7)
+
+
 @contextmanager
 def temp_chdir(cwd=None):
     if six.PY3:
