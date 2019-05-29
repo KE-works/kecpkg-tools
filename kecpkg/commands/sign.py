@@ -53,6 +53,7 @@ def sign(package=None, **options):
 
     # first subcommands that do not require package to be selected.
 
+    # noinspection PyShadowingNames
     def _do_clear(options):
         echo_info("Clearing all keys from the KECPKG keyring")
         if not options.get('do_yes'):
@@ -66,7 +67,8 @@ def sign(package=None, **options):
             sys.exit(1)
 
     def _do_list(gpg, explain=False):
-        if explain: echo_info("Listing all keys from the KECPKG keyring")
+        if explain:
+            echo_info("Listing all keys from the KECPKG keyring")
         result = gpg.list_keys(secret=True)
         if len(result):
             from tabulate import tabulate
@@ -77,6 +79,7 @@ def sign(package=None, **options):
                           "secret key to the KECPKG keyring in order to sign KECPKG's.")
                 sys.exit(1)
 
+    # noinspection PyShadowingNames
     def _do_import(gpg, options):
         echo_info("Importing secret key into KECPKG keyring from '{}'".format(options.get('do_import')))
         result = gpg.import_keys(open(os.path.abspath(options.get('do_import')), 'rb').read())
@@ -96,12 +99,15 @@ def sign(package=None, **options):
                      "private key block?".format(options.get('do_import')))
         sys.exit(1)
 
+    # noinspection PyShadowingNames
     def _do_delete_key(gpg, options):
         echo_info("Deleting private key with ID '{}' from the KECPKG keyring".format(options.get('do_delete_key')))
 
         # custom call to gpg using --delete-secret-and-public-key
         result = gpg.result_map['delete'](gpg)
+        # noinspection PyProtectedMember
         p = gpg._open_subprocess(['--yes', '--delete-secret-and-public-key', options.get('do_delete_key')])
+        # noinspection PyProtectedMember
         gpg._collect_output(p, result, stdin=p.stdin)
 
         # result = gpg.delete_keys(fingerprints=options.get('do_delete_key'),
@@ -116,6 +122,7 @@ def sign(package=None, **options):
         echo_failure("Could not delete key.")
         sys.exit(1)
 
+    # noinspection PyShadowingNames
     def _do_create_key(gpg, options):
         echo_info("Will create a secret key and store it into the KECPKG keyring.")
         package_dir = get_package_dir(package_name=package, fail=False)
@@ -157,6 +164,7 @@ def sign(package=None, **options):
         echo_failure("Could not generate the key due to an error: '{}'".format(result.stderr))
         sys.exit(1)
 
+    # noinspection PyShadowingNames
     def _do_export_key(gpg, options):
         """Exporting public key"""
         echo_info("Exporting public key")
@@ -174,6 +182,7 @@ def sign(package=None, **options):
         echo_failure("Could not export key")
         sys.exit(1)
 
+    # noinspection PyShadowingNames
     def _do_verify_kecpkg(gpg, options):
         echo_info("Verify the contents of the KECPKG and if the KECPKG is signed with a valid signature.")
 
@@ -214,8 +223,8 @@ def verify_signature(package_dir, artifacts_filename, artifacts_sig_filename):
     Check signature of the package.
 
     :param package_dir: directory fullpath of the package
-    :param settings: settings object
-    :param verbose: be verbose (or not)
+    :param artifacts_filename: path of the artifacts file
+    :param artifacts_sig_filename: path of the artifacts signature file
     :return: None
     """
     gpg = get_gpg()
@@ -262,6 +271,7 @@ def verify_artifacts_hashes(package_dir, artifacts_filename):
     #            ^filename ^algo  ^hash          ^size in bytes
     fails = []
     for af in artifacts:
+        # noinspection PyShadowingBuiltins,PyShadowingBuiltins
         filename, hash, orig_size = af.split(',')
         algorithm, orig_hash = hash.split('=')
         fp = os.path.join(package_dir, filename)

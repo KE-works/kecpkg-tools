@@ -80,7 +80,7 @@ def remove_path(path):
     except (IOError, OSError):
         try:
             os.remove(path)
-        except (IOError):
+        except IOError:
             pass
 
 
@@ -136,7 +136,6 @@ def get_package_name():
     """
     Provide the name of the package (in current dir).
 
-    :param fail: ensure that directory search does not fail in a exit.
     :return: package name or None
     """
     package_dir = get_package_dir(fail=False)
@@ -200,6 +199,7 @@ def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_excl
         echo_info('{}'.format(artifacts))
     return set(artifacts)
 
+
 def render_package_info(settings, package_dir, backup=True):
     """Render a new package_info.json based on the settings.
 
@@ -223,6 +223,7 @@ def render_package_info(settings, package_dir, backup=True):
                                 entrypoint_script=settings.get('entrypoint_script'),
                                 entrypoint_func=settings.get('entrypoint_func')),
                    target_dir=package_dir)
+
 
 def unzip_package(package_path, target_path):
     """

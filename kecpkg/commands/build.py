@@ -69,7 +69,8 @@ def build_package(package_dir, build_path, settings, options=None, verbose=False
                                                settings.get('python_version'))
     echo_info('Creating package name `{}`'.format(dist_filename))
 
-    if verbose: echo_info(("Creating 'ARTIFACTS' file with list of contents and their hashes"))
+    if verbose:
+        echo_info("Creating 'ARTIFACTS' file with list of contents and their hashes")
     generate_artifact_hashes(package_dir, artifacts, settings, verbose=verbose)
     artifacts.add(settings.get('artifacts_filename', 'ARTIFACTS'))
 
@@ -136,7 +137,8 @@ def sign_package(package_dir, settings, options=None, verbose=False):
 
     if options.get('sign_keyid') is None:
         tabulate_keys(gpg, explain=True)
-        options['sign_keyid'] = click.prompt("Provide Key (Name, Comment, Email, Fingerprint) to sign package with", default=settings.get('email'))
+        options['sign_keyid'] = click.prompt("Provide Key (Name, Comment, Email, Fingerprint) to sign package with",
+                                             default=settings.get('email'))
     if options.get('sign_passphrase') is None:
         options['sign_passphrase'] = click.prompt("Provide Passphrase", hide_input=True)
 
@@ -163,5 +165,3 @@ def sign_package(package_dir, settings, options=None, verbose=False):
 
     verify_signature(package_dir, ARTIFACTS_FILENAME, ARTIFACTS_SIG_FILENAME)
     verify_artifacts_hashes(package_dir, ARTIFACTS_FILENAME)
-
-

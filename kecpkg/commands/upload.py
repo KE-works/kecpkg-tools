@@ -176,6 +176,7 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
 
     # Wrap up party!
     echo_success("kecpkg `{}` successfully uploaded to KE-chain.".format(os.path.basename(kecpkg_path)))
+    # noinspection PyProtectedMember
     success_url = "{api_root}/#scopes/{scope_id}/scripts/{service_id}".format(
         api_root=scope._client.api_root,
         scope_id=scope.id,

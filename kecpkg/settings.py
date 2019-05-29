@@ -16,7 +16,7 @@ ARTIFACTS_FILENAME = 'ARTIFACTS'
 ARTIFACTS_SIG_FILENAME = 'ARTIFACTS.SIG'
 
 # using the appdirs.user_data_dir to manage user data on various platforms.
-GNUPG_KECPKG_HOME = os.path.join(user_data_dir('kecpkg','KE-works BV'), '.gnupg')
+GNUPG_KECPKG_HOME = os.path.join(user_data_dir('kecpkg', 'KE-works BV'), '.gnupg')
 
 DEFAULT_SETTINGS = OrderedDict([
     ('version', '0.0.1'),

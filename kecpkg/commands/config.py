@@ -80,13 +80,13 @@ def config(package, **options):
     if options.get('set_key'):
         k, v = options.get('set_key')
         if options.get('verbose'):
-            echo_info("Set the key '{}' to value '{}'".format(k,v))
+            echo_info("Set the key '{}' to value '{}'".format(k, v))
         settings[k] = v
         save_settings(settings, package_dir=package_dir, settings_filename=options.get('settings_filename'))
 
     if options.get('get_key'):
         echo_info(tabulate([(options.get('get_key'), settings.get(options.get('get_key')))],
-                            headers=("key", "value")))
+                           headers=("key", "value")))
         return
 
     if options.get('verbose'):

@@ -7,8 +7,8 @@ import sys
 import six
 
 from kecpkg.files.rendering import render_to_file
-from kecpkg.utils import ensure_dir_exists, get_proper_python, NEED_SUBPROCESS_SHELL, venv, echo_success, echo_failure, \
-    echo_info
+from kecpkg.utils import (ensure_dir_exists, get_proper_python, NEED_SUBPROCESS_SHELL, venv,
+                          echo_success, echo_failure, echo_info)
 
 
 def create_package(package_dir, settings):
@@ -57,6 +57,9 @@ def create_venv(package_dir, settings, pypath=None, use_global=False, verbose=Fa
 
     :param package_dir: the full path to the package directory
     :param settings: the settings dict (including the venv_dir name to create the right venv)
+    :param pypath: absolute path to the python binary interpreter to create the virtual environment with
+    :param use_global: Use global sysem site packages when creating virtual environment (default False)
+    :param verbose: Use verbosity (default False)
     """
     venv_dir = os.path.join(package_dir, settings.get('venv_dir'))
 

@@ -23,7 +23,7 @@ def hash_of_file(path, algorithm='sha256'):
     return hash.hexdigest()
 
 
-__gpg = None  # type: gnupg.GPG
+__gpg = None  # type: gnupg.GPG or None
 
 
 def get_gpg():
@@ -38,7 +38,7 @@ def get_gpg():
         if ON_LINUX:
             gpg_bin = subprocess.getoutput('which gpg')
         if ON_WINDOWS:
-            gpg_bin = 'C:\Program Files\GnuPG\gpg'
+            gpg_bin = 'C:\\Program Files\\GnuPG\\gpg'
         elif ON_MACOS:
             gpg_bin = '/usr/local/bin/gpg'
         if not os.path.exists(gpg_bin):
@@ -75,6 +75,7 @@ def list_keys(gpg):
         key_list.append(row)
     return key_list
 
+
 def tabulate_keys(gpg, explain=False):
     """
     List all keys in a table for printing on the CLI.
@@ -93,7 +94,8 @@ def tabulate_keys(gpg, explain=False):
     else:
         echo_info("No keys found in KECPKG keyring. Use `--import-key` or `--create-key` to add a "
                   "secret key to the KECPKG keyring in order to sign KECPKG's.")
-        if explain: sys.exit(1)
+        if explain:
+            sys.exit(1)
 
 
 def parse_key_uids(uids):
