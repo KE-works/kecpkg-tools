@@ -5,5 +5,3 @@ CONTEXT_SETTINGS = {
 UNKNOWN_OPTIONS = {
     'ignore_unknown_options': True,
 }.update(CONTEXT_SETTINGS)
-
-
