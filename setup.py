@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 PACKAGE_NAME = 'kecpkg'
 HERE = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(HERE, 'README.rst'), 'r') as f:
+with open(os.path.join(HERE, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 ABOUT = {}
@@ -18,6 +18,7 @@ setup(
     version=ABOUT.get('__version__'),
     description='',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Jochem Berends',
     author_email='jochem.berends@ke-works.com',
     maintainer='Jochem Berends',
@@ -31,11 +32,13 @@ setup(
         'pykechain',
         'KE-chain',
         'Services Integration Module',
-        'SIM'
+        'SIM',
+        'KECPKG',
+        'GPG'
     ),
 
     classifiers=(
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
@@ -43,6 +46,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
     ),
@@ -54,7 +58,7 @@ setup(
         'pykechain>=2.0.0',
         'appdirs',
         'tabulate',
-        'python-gnupg'
+        'python-gnupg;python_version>="3"'
     ),
 
     tests_require=(

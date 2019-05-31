@@ -44,7 +44,14 @@ Python 2.7/3.5+ and PyPy.
 
 .. code-block:: bash
 
-    $ pip install kecpkg-tools
+    $ pip install --user --upgrade kecpkg-tools
+
+or when pip is not installed on the system
+
+.. code-block:: bash
+
+    $ python3 -m pip install --user --upgrade kecpkg-tools
+
 
 License
 -------

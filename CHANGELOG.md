@@ -1,7 +1,7 @@
 # Changelog
 
 ## 1.0.0 (28MAY19)
-Version 1.0.0 release of the `kecpkg-tools` as in the past year no updates were deemed necessary and it is heavily used internally by KE-works BV and at customers to manage ke-chain script packages (KECPKG's). 
+Version 1.0.0 release of the `kecpkg-tools` as in the past year no updates were deemed necessary and it is heavily used internally by KE-works BV and at customers to manage ke-chain script packages (KECPKG's). Package signing is only available for Python 3. 
 
  * Added the ability to manage signatures and keys. We built a Publick Key Infrastructure to sign packages and have the ability to trust packages signed with a developer key. The process of creating and submitting a key to be included in the trusted keyring of KE-chain will be on our [support portal](https://support.ke-chain.com) later when it is all available in KE-chain production. Please check out the documentation of the commandline interface using `kecpkg sign --help` for further information.
  * The build process is does now provide a list of artifacts (ARTIFACTS) that are included in a kecpkg. The list of artifacts consist out of the (relative pathname), the hash of the file (normally sha256) and the filesize. KE-chain is able to check the contents of the kecpkgs after upload against this file and will determine of the kecpkgs is untempered on disk.
