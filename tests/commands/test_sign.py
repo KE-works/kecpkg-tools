@@ -1,6 +1,9 @@
+import os
 import sys
+from unittest import skipIf
 
 import pytest
+import six
 
 from kecpkg.cli import kecpkg
 from kecpkg.gpg import list_keys, get_gpg
@@ -34,7 +37,8 @@ TEST_SECRET_KEY_PASSPHRASE = "test"
 TEST_SECRET_KEY_FINGERPRINT = "8D092FCC060BCC1E97CEC48987A177AAB2371E68"
 
 
-@pytest.mark.skipif(sys.version_info <= (2, 7),
+@skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true", "Skipping this test on Travis CI.")
+@skipIf(sys.version_info <= (2, 7),
                     reason="Skipping tests for python 2.7, as PGP signing cannot be provided")
 class TestCommandSign(BaseTestCase):
 
@@ -101,8 +105,7 @@ class TestCommandSign(BaseTestCase):
             self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
             self.assertExists('out.asc')
 
-
-@pytest.mark.skipif(sys.version_info >= (3, 4), reason="These tests are for python 2 only.")
+@skipIf(sys.version_info >= (3, 4), reason="These tests are for python 2 only.")
 class TestCommandSign27(BaseTestCase):
     def test_sign_capability_unaivable(self):
         result = self.runner.invoke(kecpkg, ['sign', '--list'])
