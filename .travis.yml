@@ -5,11 +5,12 @@ python:
   - "2.7"
   - "3.5"
   - "3.6"
+  - "py37-dev",
   - "pypy"
   - "pypy3"
 
-before_install:
-  - sudo apt install gnupg
+#before_install:
+#  - sudo apt install gnupg
 
 install:
   pip install tox-travis
