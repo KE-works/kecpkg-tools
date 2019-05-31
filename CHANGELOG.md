@@ -1,14 +1,16 @@
 # Changelog
 
-## 1.0.0 (28MAY19)
-Version 1.0.0 release of the `kecpkg-tools` as in the past year no updates were deemed necessary and it is heavily used internally by KE-works BV and at customers to manage ke-chain script packages (KECPKG's). Package signing is only available for Python 3. 
+## 1.0.1 (31MAY19)
+Today we release Version 1.0 of the kecpkg-tools as in the past year no updates were deemed necessary. It is heavily used internally by KE-works BV and at customers to manage ke-chain script packages (KECPKG's). The major additional features of this release are the package signing ability (Python 3 only). 
 
- * Added the ability to manage signatures and keys. We built a Publick Key Infrastructure to sign packages and have the ability to trust packages signed with a developer key. The process of creating and submitting a key to be included in the trusted keyring of KE-chain will be on our [support portal](https://support.ke-chain.com) later when it is all available in KE-chain production. Please check out the documentation of the commandline interface using `kecpkg sign --help` for further information.
+ * Added the ability to manage signatures and keys. We built a Publik Key Infrastructure to sign packages and have the ability to trust packages signed with a developer key. The process of creating and submitting a key to be included in the trusted keyring of KE-chain will be on our [support portal](https://support.ke-chain.com) later when it is all available in KE-chain production. Please check out the documentation of the commandline interface using `kecpkg sign --help` for further information.
  * The build process is does now provide a list of artifacts (ARTIFACTS) that are included in a kecpkg. The list of artifacts consist out of the (relative pathname), the hash of the file (normally sha256) and the filesize. KE-chain is able to check the contents of the kecpkgs after upload against this file and will determine of the kecpkgs is untempered on disk.
  * The build process also now provides an optional `kecpkg build --sign` command flag to include a signature inside the keckpg. When package signing is enabled using the `--sign` flag, the list of artifacts (ARTIFACTS file) is signed with the cryptographic signature of the developer (ARTIFACTS.SIG). This signature can be checked by KE-chain after upload when the public key of the developer is known and trusted by KE-chain. This might enable running the contained scripts on higher than scope manager permissions.
- * Adding dependent permission on GPG on linux or windows in order to enable the package signing features.
- * Added dependent packages tabulate, appdirs and python-gnupg.
+ * Adding dependent permissions on GPG on linux or windows in order to enable the package signing features.
+ * Added dependent packages `tabulate`, `appdirs` and `python-gnupg`.
  
+## 1.0.0 (28MAY19)
+Retracted release
 
 ## 0.9.0 (16JAN18)
  * added the ability to add multiple configurations. You can use this to create multiple settings files and build for each setting file another kecpkg. Use `kecpkg build --settings <anothersettings.json>` to create a new kecpkg in the `dist` directory. The `package-info.json` will be recreated based on what is set in the `settings` and stored inside the kecpkg. Use `kecpkg upload --settings <anothersettings.json>` to upload this kecpkg to KE-chain. You can now use a cmd or batch script with multiple setting files to create a multitude of kecpkgs and automatically upload (and even replace) them in a KE-chain project.
