@@ -96,7 +96,6 @@ def generate_artifact_hashes(package_dir, artifacts, settings, verbose=False):
     :param verbose: be verbose (or not)
     :return: None
     """
-
     artifacts_fn = settings.get('artifacts_filename', 'ARTIFACTS')
     algorithm = settings.get('hash_algorithm', 'sha256')
     if algorithm not in hashlib.algorithms_guaranteed:

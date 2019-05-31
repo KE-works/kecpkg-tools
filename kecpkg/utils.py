@@ -23,7 +23,7 @@ def ensure_dir_exists(d):
 
 
 def create_file(filepath, content=None, overwrite=True):
-    """
+    r"""
     Create file and optionally fill it with content.
 
     Will overwrite file already in place if overwrite flag is set.
@@ -227,11 +227,13 @@ def render_package_info(settings, package_dir, backup=True):
 
 def unzip_package(package_path, target_path):
     """
-    This function unzips the package in the target_path.
+    Unzip package in the target_path.
+
     The package path has the full path of the zipped file.
 
     For example: package_path = /workspace/ops.zip
                  target_path = /workspace/target/
+
     :param package_path: path of the package file
     :param target_path: target path to unzip the package into
     """

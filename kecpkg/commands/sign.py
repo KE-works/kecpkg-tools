@@ -44,15 +44,6 @@ from kecpkg.utils import remove_path, echo_info, echo_success, echo_failure, get
 @click.option('-v', '--verbose', help="Be more verbose", is_flag=True)
 def sign(package=None, **options):
     """Sign the package."""
-
-    # echo_info('Locating package ``'.format(package))
-    # package_dir = get_package_dir(package_name=package)
-    # package_name = os.path.basename(package_dir)
-    # echo_info('Package `{}` has been selected'.format(package_name))
-    # settings = load_settings(package_dir=package_dir, settings_filename=options.get('settings_filename'))
-
-    # first subcommands that do not require package to be selected.
-
     # noinspection PyShadowingNames
     def _do_clear(options):
         echo_info("Clearing all keys from the KECPKG keyring")
@@ -166,7 +157,7 @@ def sign(package=None, **options):
 
     # noinspection PyShadowingNames
     def _do_export_key(gpg, options):
-        """Exporting public key"""
+        """Export public key."""
         echo_info("Exporting public key")
         if options.get('keyid') is None:
             _do_list(gpg=gpg)
@@ -184,6 +175,7 @@ def sign(package=None, **options):
 
     # noinspection PyShadowingNames
     def _do_verify_kecpkg(gpg, options):
+        """Verify the kecpkg."""
         echo_info("Verify the contents of the KECPKG and if the KECPKG is signed with a valid signature.")
 
         current_working_directory = os.getcwd()
