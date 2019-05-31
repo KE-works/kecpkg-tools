@@ -11,6 +11,7 @@ import sys
 
 __version__ = '{{ version }}'
 
+
 def main(**kwargs):
     """
     Main entry point of the script

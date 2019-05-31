@@ -1,0 +1,24 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+twine = "*"
+tox = "*"
+pytest = "*"
+
+
+[packages]
+kecpkg-tools = {editable = true,file = "file:///Users/jochem/dev/kecpkg-tools"}
+click = "*"
+atomicwrites = "*"
+pykechain = ">=2.0.0"
+appdirs = "*"
+python-gnupg = "*"
+tabulate = "*"
+toml = "*"
+Jinja2 = "*"
+
+[requires]
+python_version = "3"

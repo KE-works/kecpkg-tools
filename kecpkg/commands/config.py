@@ -1,10 +1,11 @@
 import os
 
 import click
+from tabulate import tabulate
 
-from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info, echo_success
+from kecpkg.commands.utils import CONTEXT_SETTINGS
 from kecpkg.settings import load_settings, copy_default_settings, save_settings, SETTINGS_FILENAME
-from kecpkg.utils import get_package_dir, copy_path
+from kecpkg.utils import get_package_dir, copy_path, echo_success, echo_info
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,
@@ -15,13 +16,15 @@ from kecpkg.utils import get_package_dir, copy_path
               type=click.Path(exists=True), default=SETTINGS_FILENAME)
 @click.option('--init', is_flag=True, help="will init a settingsfile if not found")
 @click.option('--interactive', '-i', is_flag=True, help="interactive mode; guide me through the settings")
+@click.option('--get', '-g', 'get_key', help="Key to get and display", required=False)
+@click.option('--set', '-s', 'set_key', nargs=2, help="Key to set <key> <value>. Value is set as string.",
+              required=False)
 @click.option('--verbose', '-v', is_flag=True, help="be more verbose (print settings)")
 def config(package, **options):
-    r"""Manage the configuration (or settings) of the package.
+    """Manage the configuration (or settings) of the package.
 
     The various settings in the .kecpkg-settings.json file are:
 
-    \b
     package_name:   name of the package
     version:        version number of the package
     description:    longer description of the package
@@ -74,9 +77,20 @@ def config(package, **options):
                                                  value_proc=process_additional_exclude_paths)
         save_settings(settings, package_dir=package_dir, settings_filename=options.get('settings_filename'))
 
+    if options.get('set_key'):
+        k, v = options.get('set_key')
+        if options.get('verbose'):
+            echo_info("Set the key '{}' to value '{}'".format(k, v))
+        settings[k] = v
+        save_settings(settings, package_dir=package_dir, settings_filename=options.get('settings_filename'))
+
+    if options.get('get_key'):
+        echo_info(tabulate([(options.get('get_key'), settings.get(options.get('get_key')))],
+                           headers=("key", "value")))
+        return
+
     if options.get('verbose'):
-        for k, v in settings.items():
-            echo_info("  {}: '{}'".format(k, v))
+        echo_info(tabulate(settings.items(), headers=("key", "value")))
 
     if not options.get('interactive'):
         echo_success('Settings file identified and correct')

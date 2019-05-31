@@ -2,8 +2,8 @@ import os
 
 import click
 
-from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_warning, echo_failure, echo_success
-from kecpkg.utils import remove_path, get_package_dir
+from kecpkg.commands.utils import CONTEXT_SETTINGS
+from kecpkg.utils import remove_path, get_package_dir, echo_success, echo_failure, echo_warning
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,

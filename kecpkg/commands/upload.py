@@ -4,9 +4,9 @@ import sys
 import click as click
 from pykechain import Client, get_project
 
-from kecpkg.commands.utils import CONTEXT_SETTINGS, echo_info, echo_success, echo_failure
+from kecpkg.commands.utils import CONTEXT_SETTINGS
 from kecpkg.settings import load_settings, save_settings, SETTINGS_FILENAME
-from kecpkg.utils import get_package_dir, get_package_name
+from kecpkg.utils import get_package_dir, get_package_name, echo_success, echo_failure, echo_info
 
 
 @click.command(context_settings=CONTEXT_SETTINGS,
@@ -176,6 +176,7 @@ def upload_package(scope, build_path=None, kecpkg_path=None, service_id=None, se
 
     # Wrap up party!
     echo_success("kecpkg `{}` successfully uploaded to KE-chain.".format(os.path.basename(kecpkg_path)))
+    # noinspection PyProtectedMember
     success_url = "{api_root}/#scopes/{scope_id}/scripts/{service_id}".format(
         api_root=scope._client.api_root,
         scope_id=scope.id,

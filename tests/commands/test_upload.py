@@ -1,6 +1,6 @@
 import os
+from unittest import skipIf
 
-import pytest
 from click.testing import CliRunner
 from envparse import Env
 
@@ -9,12 +9,18 @@ from kecpkg.utils import get_package_dir
 from tests.utils import temp_chdir, BaseTestCase
 
 
-@pytest.mark.skipif("os.getenv('TRAVIS', False)",
-                    reason="Skipping tests when using Travis, as upload of services cannot be testing securely")
+@skipIf("os.getenv('TRAVIS', False)",
+        reason="Skipping tests when using Travis, as upload of services cannot be testing securely")
+@skipIf("os.getenv('KECHAIN_URL') is None",
+        reason="Skipping test as the KECHAIN_URL is not available as environment variable. Cannot upload kecpkg to "
+               "test this functionality. Provice a `.env` file locally to enable these tests.")
 class TestCommandUpload(BaseTestCase):
     def test_upload_non_interactive(self):
         pkgname = 'new_pkg'
         env = Env.read_envfile()
+
+        self.assertTrue(os.environ.get('KECHAIN_URL'),
+                        "KECHAIN_URL is not set in environment, cannot perform this test")
 
         with temp_chdir() as d:
             runner = CliRunner()

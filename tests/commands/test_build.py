@@ -22,8 +22,9 @@ class TestCommandPurge(BaseTestCase):
             os.chdir(package_dir)
 
             result = runner.invoke(kecpkg, ['build', pkgname])
-            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
             self.assertExists(os.path.join(package_dir, 'dist'))
+
 
             # check if dist is filled
             package_dir_contents = os.listdir(os.path.join(package_dir, 'dist'))
@@ -41,7 +42,7 @@ class TestCommandPurge(BaseTestCase):
             os.chdir(package_dir)
 
             result = runner.invoke(kecpkg, ['build', pkgname])
-            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
             self.assertExists(os.path.join(package_dir, 'dist'))
 
             # check if dist is filled
@@ -50,7 +51,7 @@ class TestCommandPurge(BaseTestCase):
 
             # restart the build, with prune and check if dist still has 1
             result = runner.invoke(kecpkg, ['build', pkgname, '--prune'])
-            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
             self.assertExists(os.path.join(package_dir, 'dist'))
 
             # check if dist is filled
@@ -87,7 +88,7 @@ class TestCommandPurge(BaseTestCase):
 
             # run the builder
             result = runner.invoke(kecpkg, ['build', pkgname, '--verbose'])
-            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
             self.assertExists(os.path.join(package_dir, 'dist'))
 
             # check the zip such that the extra files are not packaged
@@ -116,7 +117,7 @@ class TestCommandPurge(BaseTestCase):
             os.chdir(package_dir)
 
             result = runner.invoke(kecpkg, ['build', pkgname, '--config', alt_settings])
-            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
             self.assertExists(os.path.join(package_dir, 'dist'))
 
             dist_dir_contents = os.listdir(os.path.join(package_dir, 'dist'))

@@ -1,16 +1,18 @@
-include README.rst
+include README.md
 include LICENSE
 include CONTRIBUTED
 include CHANGELOG.md
 include requirements.txt
+include Pipfile
 include tox.ini
-include pyproject.toml
 include .coveragerc
 
 graft tests
 graft kecpkg
 prune .idea
 prune .env*
+prune *.depr
+exclude build_release.sh
 recursive-include kecpkg *.template
 
 global-exclude *.pyc
