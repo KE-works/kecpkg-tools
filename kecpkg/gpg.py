@@ -7,6 +7,7 @@ import sys
 from datetime import datetime
 
 import gnupg
+import six
 
 from kecpkg.settings import GNUPG_KECPKG_HOME
 from kecpkg.utils import ON_LINUX, ON_WINDOWS, ON_MACOS, echo_failure, read_chunks, echo_info
@@ -31,6 +32,10 @@ def get_gpg():
     """Return the GPG objects instantiated with custom KECPKG keyring in custom KECPKG GNUPG home."""
     global __gpg
     if not __gpg:
+        if six.PY2:
+            echo_failure('Package signing capability is not available in python 2.7. Please use python 3 or greater.')
+            sys.exit(1)
+
         import gnupg
         logging.basicConfig(level=LOGLEVEL)
         logging.getLogger('gnupg')

@@ -1,12 +1,10 @@
-import os
-import unittest
-
-from click.testing import CliRunner
+import sys
+from unittest import skipIf
 
 from kecpkg.cli import kecpkg
 from kecpkg.gpg import list_keys, get_gpg
 from kecpkg.utils import create_file
-from tests.utils import BaseTestCase, temp_chdir, is_travis, is_python27
+from tests.utils import BaseTestCase, temp_chdir
 
 TEST_SECRET_KEY = """
 -----BEGIN PGP PRIVATE KEY BLOCK-----
@@ -34,12 +32,15 @@ qTdggGeiZjdzXYSbq0pW
 TEST_SECRET_KEY_PASSPHRASE = "test"
 TEST_SECRET_KEY_FINGERPRINT = "8D092FCC060BCC1E97CEC48987A177AAB2371E68"
 
+
+@skipIf(sys.version_info <= (2, 7), reason="Skipping tests for python 2.7, as PGP signing cannot be provided")
 class TestCommandSign(BaseTestCase):
 
     def _import_test_key(self):
         with self.runner.isolated_filesystem() as d:
             create_file('TESTKEY.asc', TEST_SECRET_KEY)
             self.runner.invoke(kecpkg, ['sign', '--import-key', 'TESTKEY.asc'])
+
     def tearDown(self):
         super(TestCommandSign, self).tearDown()
         self.runner.invoke(kecpkg, ['sign', '--delete-key', TEST_SECRET_KEY_FINGERPRINT])
@@ -47,42 +48,38 @@ class TestCommandSign(BaseTestCase):
     def test_sign_list_keys(self):
         self._import_test_key()
         result = self.runner.invoke(kecpkg, ['sign', '--list'])
-        self.assertIn(result.exit_code, [0,1], "Results of the run were: \n---\n{}\n---".format(result.output))
+        self.assertIn(result.exit_code, [0, 1], "Results of the run were: \n---\n{}\n---".format(result.output))
 
-    @unittest.skipIf(is_travis() and is_python27(), "Skipping this test on Travis CI.")
     def test_import_key(self):
         with temp_chdir() as d:
             create_file('TESTKEY.asc', TEST_SECRET_KEY)
             result = self.runner.invoke(kecpkg, ['sign', '--import-key', 'TESTKEY.asc'])
-            self.assertEqual(result.exit_code, 0,  "Results of the run were: \n---\n{}\n---".format(result.output))
+            self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
 
-            #teardown
+            # teardown
             result = self.runner.invoke(kecpkg, ['sign', '--delete-key', TEST_SECRET_KEY_FINGERPRINT])
             self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
 
-    @unittest.skipIf(is_travis() and is_python27(), "Skipping this test on Travis CI.")
     def test_delete_key(self):
         self._import_test_key()
 
         result = self.runner.invoke(kecpkg, ['sign', '--delete-key', TEST_SECRET_KEY_FINGERPRINT])
         self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
 
-    @unittest.skipIf(is_travis() and is_python27(), "Skipping this test on Travis CI.")
     def test_delete_key_wrong_fingerprint(self):
         self._import_test_key()
 
         result = self.runner.invoke(kecpkg, ['sign', '--delete-key', 'THISISAWRONGFINGERPRINT'])
-        self.assertEqual(result.exit_code, 1, "Results of the run were: \n---\n{}\n---".format(result.output) )
+        self.assertEqual(result.exit_code, 1, "Results of the run were: \n---\n{}\n---".format(result.output))
 
-    @unittest.skipIf(is_travis() and is_python27(), "Skipping this test on Travis CI.")
     def test_create_key(self):
         result = self.runner.invoke(kecpkg, ['sign', '--create-key'],
-                           input="Testing\n"
-                                 "KECPKG TESTING CREATE KEY\n"
-                                 "no-reply@ke-works.com\n"
-                                 "1\n"
-                                 "pass\n"
-                                 "pass\n")
+                                    input="Testing\n"
+                                          "KECPKG TESTING CREATE KEY\n"
+                                          "no-reply@ke-works.com\n"
+                                          "1\n"
+                                          "pass\n"
+                                          "pass\n")
         self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
 
         keys = list_keys(get_gpg())
@@ -92,7 +89,6 @@ class TestCommandSign(BaseTestCase):
         result = self.runner.invoke(kecpkg, ['sign', '--delete-key', fingerprint])
         self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
 
-    @unittest.skipIf(is_travis() and is_python27(), "Skipping this test on Travis CI.")
     def test_export_key(self):
         self._import_test_key()
 
@@ -102,3 +98,10 @@ class TestCommandSign(BaseTestCase):
                                                  '--keyid', TEST_SECRET_KEY_FINGERPRINT])
             self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
             self.assertExists('out.asc')
+
+
+@skipIf(sys.version_info >= (3,4), reason="These tests are for python 2 only.")
+class TestCommandSign27(BaseTestCase):
+    def test_sign_capability_unaivable(self):
+        result = self.runner.invoke(kecpkg, ['sign', '--list'])
+        self.assertEqual(result.exit_code, 1, "Results of the run were: \n---\n{}\n---".format(result.output))
