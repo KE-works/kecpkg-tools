@@ -58,7 +58,7 @@ setup(
         'pykechain>=2.0.0',
         'appdirs',
         'tabulate',
-        'python-gnupg;python_version>="3"'
+        'python-gnupg'
     ),
 
     tests_require=(
