@@ -2,13 +2,9 @@ kecpkg-tools
 ============
 
 [![PyPI](https://img.shields.io/pypi/v/kecpkg-tools.svg)](https://pypi.python.org/pypi/kecpkg-tools)
-
 [![PyPI - Status](https://img.shields.io/pypi/status/kecpkg-tools.svg)](https://pypi.python.org/pypi/kecpkg-tools)
-
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/kecpkg-tools.svg)
-
 [![Travis Build](https://travis-ci.org/KE-works/kecpkg-tools.svg?branch=master)](https://travis-ci.org/KE-works/kecpkg-tools)
-
 [![Join the chat at https://gitter.im/KE-works/pykechain](https://badges.gitter.im/KE-works/pykechain.svg)](https://gitter.im/KE-works/pykechain?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Usage
