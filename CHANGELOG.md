@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.2 (19JUN19)
+ * fixed compatibility issue with GPG installation on windows. Now we do find the correct gpg.exe on your windows harddisk if you installed it through https://gpg4win.org/index.html.
+
 ## 1.0.1 (31MAY19)
 Today we release Version 1.0 of the kecpkg-tools as in the past year no updates were deemed necessary. It is heavily used internally by KE-works BV and at customers to manage ke-chain script packages (KECPKG's). The major additional features of this release are the package signing ability (Python 3 only). 
 

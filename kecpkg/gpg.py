@@ -43,7 +43,15 @@ def get_gpg():
         if ON_LINUX:
             gpg_bin = subprocess.getoutput('which gpg')
         if ON_WINDOWS:
-            gpg_bin = 'C:\\Program Files\\GnuPG\\gpg'
+            bin_path_guesses = ["C:\\Program Files (x86)\\GnuPG\\bin\\gpg.exe",
+                                "C:\\Program Files\\GnuPG\\gpg.exe",
+                                "C:\\Program Files (x86)\\GnuPG\\gpg.exe",
+                                "C:\\Program Files\\GnuPG\\bin\\gpg.exe"]
+            gpg_bins = [p for p in bin_path_guesses if os.path.exists(p)]
+            if gpg_bins is not None:
+                gpg_bin = gpg_bins[0]
+            else:
+                gpg_bin = bin_path_guesses[0]
         elif ON_MACOS:
             gpg_bin = '/usr/local/bin/gpg'
         if not os.path.exists(gpg_bin):
@@ -53,6 +61,7 @@ def get_gpg():
                          "achieved with `sudo apt install gnupg`.")
             echo_failure("- For Mac OSX please install GnuPG using `brew install gpg`.")
             echo_failure("- For Windows please install GnuPG using the downloads via: https://gnupg.org/download/")
+            sys.exit(1)
 
         __gpg = gnupg.GPG(gpgbinary=gpg_bin, gnupghome=GNUPG_KECPKG_HOME)
 
