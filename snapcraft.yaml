@@ -1,10 +1,12 @@
 name: kecpkg
-version: 1.0+git
+version: git
+version-script: git describe --tags
 summary: A set of tools to easily create and manage KE-chain packages.
 description: |
   kecpkg provide a set of tools to easily create and manage KE-chain packages.
   These are executable python scripts aimed for execution on the KE-chain SIM platform.
   A valid user license of KE-chain is needed. See https://ke-chain.com for more information.
+license: Apache-2.0
 
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: devmode # use 'strict' once you have the right plugs and slots
@@ -18,7 +20,15 @@ parts:
     stage-packages:
       - python-six
       - gpg
-
+      - gpg-agent
 apps:
   kecpkg:
     command: bin/kecpkg
+    environment:
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
+    plugs:
+      - gpg-keys
+      - gpg-public-keys
+      - network-bind
+

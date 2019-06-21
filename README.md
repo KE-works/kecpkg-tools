@@ -47,7 +47,7 @@ When on a linux platform, you may use the snapstore to install kecpkg automatica
 keep it up to date to the latest and greated.
 
 ```bash
-$ sudo snap install kecpkg --devmode --dangerous
+$ sudo snap install kecpkg --edge
 ```
 
 Any feedback is appreciated as we are in beta mode for publishing `kecpkg` on the snapstore.
