@@ -1,0 +1,24 @@
+name: kecpkg
+version: 1.0+git
+summary: A set of tools to easily create and manage KE-chain packages.
+description: |
+  kecpkg provide a set of tools to easily create and manage KE-chain packages.
+  These are executable python scripts aimed for execution on the KE-chain SIM platform.
+  A valid user license of KE-chain is needed. See https://ke-chain.com for more information.
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: devmode # use 'strict' once you have the right plugs and slots
+base: core18
+
+parts:
+  kecpkg:
+    plugin: python
+    python-version: python3
+    source: .
+    stage-packages:
+      - python-six
+      - gpg
+
+apps:
+  kecpkg:
+    command: bin/kecpkg
