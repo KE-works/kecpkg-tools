@@ -13,7 +13,7 @@ pytest = "*"
 kecpkg-tools = {editable = true,file = "file:///Users/jochem/dev/kecpkg-tools"}
 click = "*"
 atomicwrites = "*"
-pykechain = ">=2.0.0"
+pykechain = ">=3.0.0"
 appdirs = "*"
 python-gnupg = "*"
 tabulate = "*"

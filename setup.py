@@ -55,7 +55,7 @@ setup(
         'click',
         'atomicwrites',
         'jinja2',
-        'pykechain>=2.0.0',
+        'pykechain>=3.0',
         'appdirs',
         'tabulate',
         'python-gnupg'
