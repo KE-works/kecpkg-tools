@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.3 (21NOV19)
+ * Added the capability to change the `requirements.txt` path in the generated `package_info.json`. Thanks to @bastiaanbeijer
+
 ## 1.0.2 (19JUN19)
  * fixed compatibility issue with GPG installation on windows. Now we do find the correct gpg.exe on your windows harddisk if you installed it through https://gpg4win.org/index.html.
 

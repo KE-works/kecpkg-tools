@@ -3,17 +3,16 @@ Part of the kecpkg-tools project.
 
 Parts are borrowed from hatch Those parts are are released under the MIT license
 """
+import click
 import fnmatch
 import io
 import os
 import platform
 import re
 import shutil
+import six
 import sys
 from contextlib import contextmanager
-
-import click
-import six
 
 
 def ensure_dir_exists(d):
@@ -219,7 +218,7 @@ def render_package_info(settings, package_dir, backup=True):
 
     from kecpkg.files.rendering import render_to_file
     render_to_file(package_info_filename,
-                   content=dict(requirements_txt='requirements.txt',
+                   content=dict(requirements_txt=settings.get('requirements_filename', 'requirements.txt'),
                                 entrypoint_script=settings.get('entrypoint_script'),
                                 entrypoint_func=settings.get('entrypoint_func')),
                    target_dir=package_dir)
