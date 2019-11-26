@@ -1,4 +1,4 @@
-name: Test pykechain
+name: Test kecpkg-tools
 
 on: [push]
 

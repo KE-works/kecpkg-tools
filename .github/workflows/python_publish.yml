@@ -1,4 +1,4 @@
-name: Release pykechain
+name: Release kecpkg-tools
 
 on:
   release:
