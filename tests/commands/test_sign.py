@@ -1,9 +1,11 @@
 from unittest import skipIf
 
+import six
+
 from kecpkg.cli import kecpkg
-from kecpkg.gpg import list_keys, get_gpg
+from kecpkg.gpg import list_keys, get_gpg, has_gpg
 from kecpkg.utils import create_file
-from tests.utils import BaseTestCase, temp_chdir, skip_if_on_ci
+from tests.utils import BaseTestCase, temp_chdir
 
 # NOTE:
 # For those that crawl on the internet to discover secrets
@@ -36,9 +38,8 @@ TEST_THIS_IS_NOT_A_SECRET_PASSPHRASE = "test"
 TEST_THIS_IS_NOT_A_SECRET_KEY_FINGERPRINT = "8D092FCC060BCC1E97CEC48987A177AAB2371E68"
 
 
-# @skip_if_on_ci
-@skipIf("sys.version_info <= (2, 7)",
-        reason="Skipping tests for python 2.7, as PGP signing cannot be provided")
+@skipIf(six.PY2, reason="Skipping tests for python 2.7, as PGP signing cannot be provided")
+@skipIf(not has_gpg(), reason='GPG not found on the system or python version is < 3.')
 class TestCommandSign(BaseTestCase):
 
     def _import_test_key(self):
@@ -105,7 +106,8 @@ class TestCommandSign(BaseTestCase):
             self.assertExists('out.asc')
 
 
-@skipIf("sys.version_info >= (3, 4)", reason="These tests are for python 2 only.")
+@skipIf(not has_gpg(), reason='GPG not found on the system or python version is < 3.')
+@skipIf(six.PY3, reason="These tests are for python 2 only.")
 class TestCommandSign27(BaseTestCase):
     def test_sign_capability_unavailable(self):
         result = self.runner.invoke(kecpkg, ['sign', '--list'])

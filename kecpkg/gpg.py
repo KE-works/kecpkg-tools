@@ -27,6 +27,20 @@ def hash_of_file(path, algorithm='sha256'):
 __gpg = None  # type: gnupg.GPG or None
 
 
+def has_gpg():
+    # type: () -> bool
+    """
+    Detect the presence of GPG in the OS.
+
+    :returns: true if GPG binary is found on the system, false if not
+    """
+    try:
+        _ = get_gpg()
+    except SystemExit:
+        return False
+    return True
+
+
 def get_gpg():
     # type: () -> gnupg.GPG
     """Return the GPG objects instantiated with custom KECPKG keyring in custom KECPKG GNUPG home."""
