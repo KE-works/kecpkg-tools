@@ -16,7 +16,13 @@ from contextlib import contextmanager
 
 
 def ensure_dir_exists(d):
-    """Ensure that directory exists, otherwise make directory."""
+    # type: (str) -> None
+    """Ensure that directory exists, otherwise make directory.
+
+    :param d: directory name
+    :type d: basestring
+    :return: None
+    """
     if not os.path.exists(d):
         os.makedirs(d)
 
@@ -26,6 +32,7 @@ def create_file(filepath, content=None, overwrite=True):
     Create file and optionally fill it with content.
 
     Will overwrite file already in place if overwrite flag is set.
+
     If a list is provided each line in the list is written on a new line in the file (`fp.writelines`)
     otherwise the string will be written as such and newline characters (`\\\\n`) will be respected.
 
@@ -33,7 +40,8 @@ def create_file(filepath, content=None, overwrite=True):
     :param content: textual content.
     :type content: list or string
     :param overwrite: boolean if you want to overwrite
-    :return:
+    :return: None is file is created
+    :raises SystemExit: when the file already exists
     """
     ensure_dir_exists(os.path.dirname(os.path.abspath(filepath)))
     # if overwrite is set to True overwrite file, otherwise if file exist, exit.

@@ -6,11 +6,10 @@ from envparse import Env
 
 from kecpkg.cli import kecpkg
 from kecpkg.utils import get_package_dir
-from tests.utils import temp_chdir, BaseTestCase
+from tests.utils import temp_chdir, BaseTestCase, running_on_ci
 
 
-@skipIf("os.getenv('TRAVIS', False)",
-        reason="Skipping tests when using Travis, as upload of services cannot be testing securely")
+@skipIf(running_on_ci(), reason="Test do not work on a CI environment")
 @skipIf("os.getenv('KECHAIN_URL') is None",
         reason="Skipping test as the KECHAIN_URL is not available as environment variable. Cannot upload kecpkg to "
                "test this functionality. Provice a `.env` file locally to enable these tests.")

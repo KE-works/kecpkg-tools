@@ -10,7 +10,7 @@ import gnupg
 import six
 
 from kecpkg.settings import GNUPG_KECPKG_HOME
-from kecpkg.utils import ON_LINUX, ON_WINDOWS, ON_MACOS, echo_failure, read_chunks, echo_info
+from kecpkg.utils import ON_LINUX, ON_WINDOWS, ON_MACOS, echo_failure, read_chunks, echo_info, ensure_dir_exists
 
 LOGLEVEL = logging.INFO
 
@@ -25,6 +25,20 @@ def hash_of_file(path, algorithm='sha256'):
 
 
 __gpg = None  # type: gnupg.GPG or None
+
+
+def has_gpg():
+    # type: () -> bool
+    """
+    Detect the presence of GPG in the OS.
+
+    :returns: true if GPG binary is found on the system, false if not
+    """
+    try:
+        _ = get_gpg()
+    except SystemExit:
+        return False
+    return True
 
 
 def get_gpg():
@@ -62,6 +76,10 @@ def get_gpg():
             echo_failure("- For Mac OSX please install GnuPG using `brew install gpg`.")
             echo_failure("- For Windows please install GnuPG using the downloads via: https://gnupg.org/download/")
             sys.exit(1)
+
+        if not os.path.exists(GNUPG_KECPKG_HOME):
+            # create the GNUPG_KECPKG_HOME when not exist, otherwise the GPG will fail
+            ensure_dir_exists(GNUPG_KECPKG_HOME)
 
         __gpg = gnupg.GPG(gpgbinary=gpg_bin, gnupghome=GNUPG_KECPKG_HOME)
 
