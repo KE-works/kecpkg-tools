@@ -21,7 +21,7 @@ jobs:
 
     - name: Install OS dependencies
       run: |
-        sudo apt install gpg
+        sudo apt-get install gpg --yes
 
     - name: Install basic dependencies
       run: |
