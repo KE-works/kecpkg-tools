@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4 (26NOV19)
+ * Maintenance release.
+ * changed CI setup to use github actions. No end-user facing changes. #10
+
 ## 1.0.3 (21NOV19)
  * Added the capability to change the `requirements.txt` path in the generated `package_info.json`. Thanks to @bastiaanbeijer
 
