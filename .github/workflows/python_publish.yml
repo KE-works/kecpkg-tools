@@ -24,4 +24,4 @@ jobs:
         TWINE_NON_INTERACTIVE: '1'
       run: |
         python setup.py sdist bdist_wheel --universal
-        twine upload dist/kecpkg-* --disable-progress-bar
+        twine upload dist/* --disable-progress-bar
