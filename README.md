@@ -4,7 +4,7 @@
 [![Snap Status](https://build.snapcraft.io/badge/KE-works/kecpkg-tools.svg)](https://build.snapcraft.io/user/KE-works/kecpkg-tools)
 [![PyPI - Status](https://img.shields.io/pypi/status/kecpkg-tools.svg)](https://pypi.python.org/pypi/kecpkg-tools)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/kecpkg-tools.svg)
-[![Travis Build](https://travis-ci.org/KE-works/kecpkg-tools.svg?branch=master)](https://travis-ci.org/KE-works/kecpkg-tools)
+[![Github Build](https://github.com/KE-works/kecpkg-tools/workflows/Test%20kecpkg-tools/badge.svg?branch=master)](https://github.com/KE-works/kecpkg-tools/actions?query=branch%3Amaster+workflow%3A%22Test+kecpkg-tools%22)
 [![Join the chat at https://gitter.im/KE-works/pykechain](https://badges.gitter.im/KE-works/pykechain.svg)](https://gitter.im/KE-works/pykechain?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
