@@ -6,6 +6,7 @@ include requirements.txt
 include Pipfile
 include tox.ini
 include .coveragerc
+include snapcraft.yaml
 
 graft tests
 graft kecpkg
