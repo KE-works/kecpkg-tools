@@ -16,5 +16,8 @@ exclude build_release.sh
 recursive-include kecpkg *.template
 
 global-exclude *.pyc
+exclude *-OFF
+exclude *.yml
+prune .github
 
 
