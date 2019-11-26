@@ -75,3 +75,12 @@ def touch_file(path):
 requires_internet = pytest.mark.skipif(
     not connected_to_internet(), reason='Not connected to internet'
 )
+
+def running_on_ci(): # no cov
+    if os.environ.get('CI') or os.environ.get('TRAVIS') or os.environ.get('GITHUB_ACTIONS'):
+        return True
+    return False
+
+skip_if_on_ci = pytest.mark.skipif(
+    skip_if_on_ci(), reason='running on CI'
+)
