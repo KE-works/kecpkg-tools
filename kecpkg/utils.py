@@ -47,14 +47,14 @@ def create_file(filepath, content=None, overwrite=True):
     # if overwrite is set to True overwrite file, otherwise if file exist, exit.
 
     if not os.path.exists(filepath) or (os.path.exists(filepath) and overwrite):
-        with open(filepath, 'w') as fd:
+        with open(filepath, "w") as fd:
             # os.utime(filepath, times=None)
             if isinstance(content, list):
                 fd.writelines(content)
             else:
                 fd.write(content)
     else:
-        echo_failure("File '{}' already exists.".format(filepath))
+        echo_failure(f"File '{filepath}' already exists.")
         sys.exit(1)
 
 
@@ -66,11 +66,11 @@ def copy_path(sourcepath, destpath):
     :param destpath: destination path to copy to
     """
     if os.path.isdir(sourcepath):
-        if six.PY3:
-            shutil.copytree(sourcepath, os.path.join(destpath, basepath(sourcepath)),
-                            copy_function=shutil.copy)
-        else:
-            shutil.copytree(sourcepath, os.path.join(destpath, basepath(sourcepath)))
+        shutil.copytree(
+            sourcepath,
+            os.path.join(destpath, basepath(sourcepath)),
+            copy_function=shutil.copy,
+        )
 
     else:
         shutil.copy(sourcepath, destpath)
@@ -84,10 +84,10 @@ def remove_path(path):
     """
     try:
         shutil.rmtree(path)
-    except (IOError, OSError):
+    except OSError:
         try:
             os.remove(path)
-        except IOError:
+        except OSError:
             pass
 
 
@@ -121,7 +121,7 @@ def get_package_dir(package_name=None, fail=True):
     def _inner(d):
         if os.path.exists(os.path.join(d, SETTINGS_FILENAME)):
             return d
-        elif os.path.exists(os.path.join(d, 'package_info.json')):
+        elif os.path.exists(os.path.join(d, "package_info.json")):
             return d
         else:
             return None
@@ -132,8 +132,10 @@ def get_package_dir(package_name=None, fail=True):
     if not package_dir and package_name is not None:
         package_dir = _inner(package_name)
     if not package_dir and package_name is not None:
-        echo_failure('This does not seem to be a package in path `{}` - please check that there is a '
-                     '`package_info.json` or a `{}`'.format(package_dir, SETTINGS_FILENAME))
+        echo_failure(
+            "This does not seem to be a package in path `{}` - please check that there is a "
+            "`package_info.json` or a `{}`".format(package_dir, SETTINGS_FILENAME)
+        )
         if fail:
             sys.exit(1)
     return package_dir
@@ -152,7 +154,9 @@ def get_package_name():
         return None
 
 
-def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_exclude_paths=None, verbose=False):
+def get_artifacts_on_disk(
+    root_path, additional_exclude_paths=None, default_exclude_paths=None, verbose=False
+):
     # type: (str, list, list, bool) -> set
     """
     Retrieve all artifacts on disk.
@@ -167,18 +171,19 @@ def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_excl
     :rtype: set
     """
     from kecpkg.settings import EXCLUDE_IN_BUILD
+
     exclude_paths = default_exclude_paths or EXCLUDE_IN_BUILD
     if verbose:
-        echo_info("basic excluded paths are: `{}`".format(exclude_paths))
+        echo_info(f"basic excluded paths are: `{exclude_paths}`")
 
     # get additional exclude paths from the settings file
     if additional_exclude_paths and isinstance(additional_exclude_paths, list):
         exclude_paths.extend(additional_exclude_paths)
         if verbose:
-            echo_info("additional exclude paths are: `{}`".format(additional_exclude_paths))
+            echo_info(f"additional exclude paths are: `{additional_exclude_paths}`")
 
     if not os.path.exists(root_path):
-        echo_failure("The root path: '{}' does not exist".format(root_path))
+        echo_failure(f"The root path: '{root_path}' does not exist")
         sys.exit(1)
 
     # getting all attachments
@@ -188,22 +193,23 @@ def get_artifacts_on_disk(root_path, additional_exclude_paths=None, default_excl
             if exclude_path in dirs:
                 dirs.remove(exclude_path)
                 if verbose:
-                    echo_warning("Ignored path `{}`".format(exclude_path))
+                    echo_warning(f"Ignored path `{exclude_path}`")
 
         for filename in filenames:
             # print([(filename,ptrn,fnmatch.fnmatch(filename, ptrn)) for ptrn in exclude_paths])
             if not any([fnmatch.fnmatch(filename, ptrn) for ptrn in exclude_paths]):
-                full_artifact_subpath = '{}{}{}'.format(root, os.path.sep, filename). \
-                    replace('{}{}'.format(root_path, os.path.sep), '')
+                full_artifact_subpath = f"{root}{os.path.sep}{filename}".replace(
+                    f"{root_path}{os.path.sep}", ""
+                )
                 artifacts.append(full_artifact_subpath)
                 if verbose:
-                    echo_info('Found `{}`'.format(full_artifact_subpath))
+                    echo_info(f"Found `{full_artifact_subpath}`")
             else:
                 if verbose:
-                    echo_warning('Ignored `{}`'.format(filename))
+                    echo_warning(f"Ignored `{filename}`")
 
     if verbose:
-        echo_info('{}'.format(artifacts))
+        echo_info(f"{artifacts}")
     return set(artifacts)
 
 
@@ -215,21 +221,26 @@ def render_package_info(settings, package_dir, backup=True):
     :param backup: (optional) if set to True the original package_info will be backed-up
     :return:
     """
-    package_info_filename = 'package_info.json'
+    package_info_filename = "package_info.json"
     package_info_path = os.path.join(package_dir, package_info_filename)
     if backup and os.path.exists(package_info_path):
-        if os.path.exists("{}-dist".format(package_info_path)):
-            os.remove("{}-dist".format(package_info_path))
-        os.rename(package_info_path, "{}-dist".format(package_info_path))
+        if os.path.exists(f"{package_info_path}-dist"):
+            os.remove(f"{package_info_path}-dist")
+        os.rename(package_info_path, f"{package_info_path}-dist")
     elif os.path.exists(package_info_path):
         os.remove(package_info_path)
 
     from kecpkg.files.rendering import render_to_file
-    render_to_file(package_info_filename,
-                   content=dict(requirements_txt=settings.get('requirements_filename', 'requirements.txt'),
-                                entrypoint_script=settings.get('entrypoint_script'),
-                                entrypoint_func=settings.get('entrypoint_func')),
-                   target_dir=package_dir)
+
+    render_to_file(
+        package_info_filename,
+        content=dict(
+            requirements_txt=settings.get("requirements_filename", "requirements.txt"),
+            entrypoint_script=settings.get("entrypoint_script"),
+            entrypoint_func=settings.get("entrypoint_func"),
+        ),
+        target_dir=package_dir,
+    )
 
 
 def unzip_package(package_path, target_path):
@@ -245,7 +256,8 @@ def unzip_package(package_path, target_path):
     :param target_path: target path to unzip the package into
     """
     import zipfile
-    with zipfile.ZipFile(package_path, 'r') as zip_file:
+
+    with zipfile.ZipFile(package_path, "r") as zip_file:
         zip_file.extractall(target_path)
 
 
@@ -253,13 +265,13 @@ def unzip_package(package_path, target_path):
 # Graceously borrowed From hatch package.
 
 __platform = platform.system()
-ON_LINUX = os.name == 'posix' or __platform == 'Linux'
-ON_MACOS = os.name == 'mac' or __platform == 'Darwin'
-ON_WINDOWS = NEED_SUBPROCESS_SHELL = os.name == 'nt' or __platform == 'Windows'
+ON_LINUX = os.name == "posix" or __platform == "Linux"
+ON_MACOS = os.name == "mac" or __platform == "Darwin"
+ON_WINDOWS = NEED_SUBPROCESS_SHELL = os.name == "nt" or __platform == "Windows"
 VENV_FLAGS = {
-    '_HATCHING_',
-    'VIRTUAL_ENV',
-    'CONDA_PREFIX',
+    "_HATCHING_",
+    "VIRTUAL_ENV",
+    "CONDA_PREFIX",
 }
 
 
@@ -269,7 +281,7 @@ def venv_ignored():
 
     Graceously borrowed From hatch package.
     """
-    return os.environ.get('_IGNORE_VENV_') == '1'
+    return os.environ.get("_IGNORE_VENV_") == "1"
 
 
 def venv_active():
@@ -288,12 +300,12 @@ def get_proper_python():  # no cov
     Graceously borrowed From hatch package.
     """
     if not venv_active():
-        default_python = os.environ.get('_DEFAULT_PYTHON_', None)
+        default_python = os.environ.get("_DEFAULT_PYTHON_", None)
         if default_python:
             return default_python
         elif not ON_WINDOWS:
-            return 'python3'
-    return 'python'
+            return "python3"
+    return "python"
 
 
 def get_proper_pip():  # no cov
@@ -303,12 +315,12 @@ def get_proper_pip():  # no cov
     Graceously borrowed From hatch package.
     """
     if not venv_active():
-        default_pip = os.environ.get('_DEFAULT_PIP_', None)
+        default_pip = os.environ.get("_DEFAULT_PIP_", None)
         if default_pip:
             return default_pip
         elif not ON_WINDOWS:
-            return 'pip3'
-    return 'pip'
+            return "pip3"
+    return "pip"
 
 
 def locate_exe_dir(d, check=True):
@@ -317,9 +329,11 @@ def locate_exe_dir(d, check=True):
 
     Graceously borrowed From hatch package.
     """
-    exe_dir = os.path.join(d, 'Scripts') if ON_WINDOWS else os.path.join(d, 'bin')
+    exe_dir = os.path.join(d, "Scripts") if ON_WINDOWS else os.path.join(d, "bin")
     if check and not os.path.isdir(exe_dir):
-        raise OSError('Unable to locate python virtual environment executables directory.')
+        raise OSError(
+            "Unable to locate python virtual environment executables directory."
+        )
     return exe_dir
 
 
@@ -375,13 +389,13 @@ def venv(venv_path, evars=None):
     venv_exe_dir = locate_exe_dir(venv_path)
 
     evars = evars or {}
-    evars['_HATCHING_'] = '1'
-    evars['VIRTUAL_ENV'] = venv_path
-    evars['PATH'] = '{}{}{}'.format(
-        venv_exe_dir, os.pathsep, os.environ.get('PATH', '')
+    evars["_HATCHING_"] = "1"
+    evars["VIRTUAL_ENV"] = venv_path
+    evars["PATH"] = "{}{}{}".format(
+        venv_exe_dir, os.pathsep, os.environ.get("PATH", "")
     )
 
-    with env_vars(evars, ignore={'__PYVENV_LAUNCHER__'}):
+    with env_vars(evars, ignore={"__PYVENV_LAUNCHER__"}):
         yield venv_exe_dir
 
 
@@ -392,7 +406,7 @@ def echo_success(text, nl=True):
     :param text: string to write
     :param nl: add newline
     """
-    click.secho(text, fg='cyan', bold=True, nl=nl)
+    click.secho(text, fg="cyan", bold=True, nl=nl)
 
 
 def echo_failure(text, nl=True):
@@ -402,7 +416,7 @@ def echo_failure(text, nl=True):
     :param text: string to write
     :param nl: add newline
     """
-    click.secho(text, fg='red', bold=True, nl=nl)
+    click.secho(text, fg="red", bold=True, nl=nl)
 
 
 def echo_warning(text, nl=True):
@@ -412,7 +426,7 @@ def echo_warning(text, nl=True):
     :param text: string to write
     :param nl: add newline
     """
-    click.secho(text, fg='yellow', bold=True, nl=nl)
+    click.secho(text, fg="yellow", bold=True, nl=nl)
 
 
 def echo_waiting(text, nl=True):
@@ -422,7 +436,7 @@ def echo_waiting(text, nl=True):
     :param text: string to write
     :param nl: add newline
     """
-    click.secho(text, fg='magenta', bold=True, nl=nl)
+    click.secho(text, fg="magenta", bold=True, nl=nl)
 
 
 def echo_info(text, nl=True):

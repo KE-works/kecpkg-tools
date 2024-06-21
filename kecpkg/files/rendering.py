@@ -11,7 +11,11 @@ def get_environment():
     """Retrieve the jinja 2 environment as this is a singleton."""
     global __environment
     if not __environment:
-        __environment = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
+        __environment = Environment(
+            loader=FileSystemLoader(
+                os.path.join(os.path.dirname(__file__), "templates")
+            )
+        )
     return __environment
 
 
@@ -47,7 +51,7 @@ def render_to_file(filename, content, target_dir=None, template=None):
     :return: None
     """
     # alias for render_to_template
-    template = template or '{}.template'.format(filename)
+    template = template or f"{filename}.template"
     target_dir = target_dir or os.getcwd()
     filepath = os.path.join(target_dir, filename)
 
