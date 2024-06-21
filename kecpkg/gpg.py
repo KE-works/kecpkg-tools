@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hashlib
 import logging
 import os
@@ -6,8 +8,10 @@ import subprocess
 import sys
 from datetime import datetime
 
-import gnupg
 import six
+from typing import Any, List, Optional
+
+from gnupg import GPG
 
 from kecpkg.settings import GNUPG_KECPKG_HOME
 from kecpkg.utils import (
@@ -32,7 +36,7 @@ def hash_of_file(path, algorithm="sha256"):
     return hash.hexdigest()
 
 
-__gpg = None  # type: gnupg.GPG or None
+__gpg: Optional[GPG] = None
 
 
 def has_gpg():
@@ -49,18 +53,16 @@ def has_gpg():
     return True
 
 
-def get_gpg():
-    # type: () -> gnupg.GPG
-    """Return the GPG objects instantiated with custom KECPKG keyring in custom KECPKG GNUPG home."""
+def get_gpg() -> GPG:
+    """Return the GPG objects with custom KECPKG keyring in custom KECPKG GNUPG home."""
     global __gpg
     if not __gpg:
         if six.PY2:
             echo_failure(
-                "Package signing capability is not available in python 2.7. Please use python 3 or greater."
+                "Package signing capability is not available in python 2.7. "
+                "Please use python 3 or greater."
             )
             sys.exit(1)
-
-        import gnupg
 
         logging.basicConfig(level=LOGLEVEL)
         logging.getLogger("gnupg")
@@ -100,12 +102,12 @@ def get_gpg():
             # create the GNUPG_KECPKG_HOME when not exist, otherwise the GPG will fail
             ensure_dir_exists(GNUPG_KECPKG_HOME)
 
-        __gpg = gnupg.GPG(gpgbinary=gpg_bin, gnupghome=GNUPG_KECPKG_HOME)
+        __gpg = GPG(gpgbinary=gpg_bin, gnupghome=GNUPG_KECPKG_HOME)
 
     return __gpg
 
 
-def list_keys(gpg):
+def list_keys(gpg) -> list[list[str | None | Any]]:
     """
     List all keys from the KECPKG keystore and return it as a list of list.
 
@@ -127,7 +129,7 @@ def list_keys(gpg):
     return key_list
 
 
-def tabulate_keys(gpg, explain=False):
+def tabulate_keys(gpg: GPG, explain: Optional[bool] = False) -> None:
     """
     List all keys in a table for printing on the CLI.
 
@@ -157,7 +159,7 @@ def tabulate_keys(gpg, explain=False):
             sys.exit(1)
 
 
-def parse_key_uids(uids):
+def parse_key_uids(uids: str) -> dict[str, str]:
     """
     Parse GPG key uids into a dictionary with Name, Comment and email.
 
