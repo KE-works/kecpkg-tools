@@ -76,16 +76,18 @@ def create_venv(package_dir, settings, pypath=None, use_global=False, verbose=Fa
 
     :param package_dir: the full path to the package directory
     :param settings: the settings dict (including the venv_dir name to create the right venv)
-    :param pypath: absolute path to the python binary interpreter to create the virtual environment with
-    :param use_global: Use global sysem site packages when creating virtual environment (default False)
+    :param pypath: absolute path to the python binary interpreter to create the virtual
+        environment with
+    :param use_global: Use global sysem site packages when creating virtual environment
+        (default False)
     :param verbose: Use verbosity (default False)
     """
     venv_dir = os.path.join(package_dir, settings.get("venv_dir"))
 
     if not pypath:
-        from distutils.spawn import find_executable
+        import shutil
 
-        pypath = find_executable(get_proper_python())
+        pypath = shutil.which(get_proper_python())
 
     command = [sys.executable, "-m", "virtualenv", venv_dir, "-p", pypath]
     if use_global:  # no cov
@@ -118,11 +120,8 @@ def pip_install_venv(package_dir, settings, verbose=False):
     if not os.path.exists(
         os.path.join(package_dir, settings.get("requirements_filename"))
     ):
-        echo_failure(
-            "could not find requirements.txt to install, check if `{}` exists or update settings".format(
-                settings.get("requirements_filename")
-            )
-        )
+        echo_failure(f"could not find requirements.txt to install, check if "
+                     f"`{settings.get('requirements_filename')}` exists or update settings")
         sys.exit(1)
 
     install_command = [
@@ -144,14 +143,7 @@ def pip_install_venv(package_dir, settings, verbose=False):
             )
         )
         result = None
-        if six.PY3:
-            result = subprocess.run(install_command, shell=NEED_SUBPROCESS_SHELL)
-            return result.returncode
-        elif six.PY2:
-            result = subprocess.check_output(
-                install_command, shell=NEED_SUBPROCESS_SHELL
-            )
-            return result and 0 or -1
+        result = subprocess.run(install_command, shell=NEED_SUBPROCESS_SHELL)
 
     if result:
         echo_success(str(result))

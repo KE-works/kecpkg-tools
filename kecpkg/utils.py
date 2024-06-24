@@ -10,7 +10,6 @@ import os
 import platform
 import re
 import shutil
-import six
 import sys
 from contextlib import contextmanager
 
@@ -33,8 +32,9 @@ def create_file(filepath, content=None, overwrite=True):
 
     Will overwrite file already in place if overwrite flag is set.
 
-    If a list is provided each line in the list is written on a new line in the file (`fp.writelines`)
-    otherwise the string will be written as such and newline characters (`\\\\n`) will be respected.
+    If a list is provided each line in the list is written on a new line in the file (
+    `fp.writelines`) otherwise the string will be written as such and newline characters (
+    `\\\\n`) will be respected.
 
     :param filepath: full path to a file to create
     :param content: textual content.

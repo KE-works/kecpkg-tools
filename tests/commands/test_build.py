@@ -4,9 +4,9 @@ from zipfile import ZipFile
 from click.testing import CliRunner
 
 from kecpkg.cli import kecpkg
-from kecpkg.settings import load_settings, save_settings, copy_default_settings
-from kecpkg.utils import get_package_dir, ensure_dir_exists
-from tests.utils import temp_chdir, BaseTestCase, touch_file
+from kecpkg.settings import copy_default_settings, save_settings
+from kecpkg.utils import ensure_dir_exists, get_package_dir
+from tests.utils import BaseTestCase, temp_chdir, touch_file
 
 
 class TestCommandPurge(BaseTestCase):

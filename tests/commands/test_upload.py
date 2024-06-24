@@ -12,7 +12,8 @@ from tests.utils import temp_chdir, BaseTestCase, running_on_ci
 @skipIf(running_on_ci(), reason="Test do not work on a CI environment")
 @skipIf(
     "os.getenv('KECHAIN_URL') is None",
-    reason="Skipping test as the KECHAIN_URL is not available as environment variable. Cannot upload kecpkg to "
+    reason="Skipping test as the KECHAIN_URL is not available as environment variable. "
+           "Cannot upload kecpkg to "
     "test this functionality. Provice a `.env` file locally to enable these tests.",
 )
 class TestCommandUpload(BaseTestCase):

@@ -6,7 +6,6 @@ This script is part of package `{{ package_name }}`
 Created by: {{ name }} <{{ email }}>
 {%- endif -%}
 """
-from pykechain import get_project
 import sys
 
 __version__ = '{{ version }}'

@@ -7,33 +7,26 @@ import re
 import subprocess
 import sys
 from datetime import datetime
+from typing import Any, Optional
 
 import six
-from typing import Any, List, Optional
-
 from gnupg import GPG
 
 from kecpkg.settings import GNUPG_KECPKG_HOME
 from kecpkg.utils import (
-    ON_LINUX,
-    ON_WINDOWS,
-    ON_MACOS,
-    echo_failure,
-    read_chunks,
-    echo_info,
-    ensure_dir_exists,
+    ON_LINUX, ON_MACOS, ON_WINDOWS, echo_failure, echo_info, ensure_dir_exists, read_chunks,
 )
 
 LOGLEVEL = logging.INFO
 
 
 def hash_of_file(path, algorithm="sha256"):
-    """Return the hash digest of a file."""
+    """Return the my_hash digest of a file."""
     with open(path, "rb") as archive:
-        hash = hashlib.new(algorithm)
+        my_hash = hashlib.new(algorithm)
         for chunk in read_chunks(archive):
-            hash.update(chunk)
-    return hash.hexdigest()
+            my_hash.update(chunk)
+    return my_hash.hexdigest()
 
 
 __gpg: Optional[GPG] = None
@@ -89,12 +82,14 @@ def get_gpg() -> GPG:
                 "We checked: '{}'".format(gpg_bin)
             )
             echo_failure(
-                "- For Linux please install GnuPG using your package manager. In Ubuntu/Debian this can be "
+                "- For Linux please install GnuPG using your package manager. In "
+                "Ubuntu/Debian this can be "
                 "achieved with `sudo apt install gnupg`."
             )
             echo_failure("- For Mac OSX please install GnuPG using `brew install gpg`.")
             echo_failure(
-                "- For Windows please install GnuPG using the downloads via: https://gnupg.org/download/"
+                "- For Windows please install GnuPG using the downloads via: "
+                "https://gnupg.org/download/"
             )
             sys.exit(1)
 
@@ -137,7 +132,8 @@ def tabulate_keys(gpg: GPG, explain: Optional[bool] = False) -> None:
     If explain = Truem, it will exit with returncode 1 when no keys are present.
 
     :param gpg: GPG objects
-    :param explain: With explain is True, more text is added and will exit(1) when no keys are present.
+    :param explain: With explain is True, more text is added and will exit(1) when no
+        keys are present.
     :return: None.
     """
     result = gpg.list_keys(secret=True)

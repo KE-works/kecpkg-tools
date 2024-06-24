@@ -55,23 +55,26 @@ from kecpkg.utils import (
     "update_package_info",
     is_flag=True,
     default=True,
-    help="Update the `package-info.json` for the KE-crunch execution to point to correct entrypoint based on "
-    "settings. This is okay to leave ON. Use `--no-update` if you have a custom `package-info.json`.",
+    help="Update the `package-info.json` for the KE-crunch execution to point to correct "
+         "entrypoint based on settings. This is okay to leave ON. Use `--no-update` if you "
+         "have a custom `package-info.json`.",
 )
 @click.option(
     "--sign/--no-sign",
     "do_sign",
     is_flag=True,
     default=False,
-    help="Sign the contents of the package with a cryptographic key from the keyring. Defaults to not sign.",
+    help="Sign the contents of the package with a cryptographic key from the keyring. Defaults "
+         "to not sign.",
 )
 @click.option(
     "--keyid",
     "--key-id",
     "-k",
     "sign_keyid",
-    help="ID of the cryptographic key to do the sign the contents of the built package. If not provided it "
-    "will use the default key from the KECPKG keystore. Use in combination with `--sign`",
+    help="ID of the cryptographic key to do the sign the contents of the built package. If not"
+         "provided it will use the default key from the KECPKG keystore. Use in combination "
+         "with `--sign`",
 )
 @click.option(
     "--passphrase",
@@ -167,7 +170,8 @@ def generate_artifact_hashes(package_dir, artifacts, settings, verbose=False):
     artifacts_content = []
 
     for af in artifacts:
-        # we do not need to create a hash from the ARTIFACTS and ARTIFACTS.SIG file if they are present in the list
+        # we do not need to create a hash from the ARTIFACTS and ARTIFACTS.SIG file if they
+        # are present in the list
         if af not in [artifacts_fn, artifacts_fn + ".SIG"]:
             af_fp = os.path.join(package_dir, af)
             artifacts_content.append(

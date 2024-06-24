@@ -56,7 +56,8 @@ from kecpkg.utils import (
     "do_import",
     type=click.Path(exists=True),
     help="Import secret keyfile (in .asc) to the KECPKG keyring which will be used for signing. "
-    "You can export a created key in gpg with `gpg -a --export-secret-key [keyID] > secret_key.asc`.",
+    "You can export a created key in gpg with `gpg -a --export-secret-key [keyID] > "
+         "secret_key.asc`.",
 )
 @click.option(
     "--delete-key",
@@ -78,7 +79,8 @@ from kecpkg.utils import (
     "-e",
     "do_export_key",
     type=click.Path(),
-    help="Export public key to filename with `--keyid KeyID` in .ASC format for public distribution.",
+    help="Export public key to filename with `--keyid KeyID` in .ASC format for "
+         "public distribution.",
 )
 @click.option(
     "--clear-keyring",
@@ -137,7 +139,8 @@ def sign(package=None, **options):
         else:
             if explain:
                 echo_info(
-                    "No keys found in KECPKG keyring. Use `--import-key` or `--create-key` to add a "
+                    "No keys found in KECPKG keyring. Use `--import-key` or "
+                    "`--create-key` to add a "
                     "secret key to the KECPKG keyring in order to sign KECPKG's."
                 )
                 sys.exit(1)

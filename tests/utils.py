@@ -3,7 +3,6 @@ import socket
 from contextlib import contextmanager
 from unittest import TestCase
 
-import six
 from click.testing import CliRunner
 
 
@@ -61,7 +60,7 @@ def connected_to_internet():  # no cov
         # Test connection
         socket.create_connection((host, 80), 2)
         return True
-    except:
+    except OSError:
         return False
 
 
@@ -69,9 +68,9 @@ def running_on_ci():  # no cov
     # type: () -> bool
     """If the system is running on a CI platform."""
     if (
-        os.environ.get("CI")
-        or os.environ.get("TRAVIS")
-        or os.environ.get("GITHUB_ACTIONS")
+            os.environ.get("CI")
+            or os.environ.get("TRAVIS")
+            or os.environ.get("GITHUB_ACTIONS")
     ):
         return True
     return False
