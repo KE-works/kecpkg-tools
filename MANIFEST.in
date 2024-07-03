@@ -12,6 +12,7 @@ graft tests
 graft kecpkg
 prune .idea
 prune .env*
+exclude .env.template
 prune *.depr
 exclude build_release.sh
 recursive-include kecpkg *.template
@@ -20,5 +21,3 @@ global-exclude *.pyc
 exclude *-OFF
 exclude *.yml
 prune .github
-
-

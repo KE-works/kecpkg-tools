@@ -87,7 +87,7 @@ from kecpkg.utils import (
 @click.option("-v", "--verbose", help="Be more verbose", is_flag=True)
 def build(package=None, **options):
     """Build the package and create a kecpkg file."""
-    echo_info(f"Locating package ``")
+    echo_info(f"Locating package `{package}`")
     package_dir = get_package_dir(package_name=package)
     package_name = os.path.basename(package_dir)
     echo_info(f"Package `{package_name}` has been selected")

@@ -72,7 +72,7 @@ def config(package, **options):
                     (or recently uploaded)
     last_upload:    date and time of the last upload
     """
-    echo_info(f"Locating package ``")
+    echo_info(f"Locating package `{package}`")
     package_dir = get_package_dir(package_name=package)
     package_name = os.path.basename(package_dir)
     echo_info(f"Package `{package_name}` has been selected")
