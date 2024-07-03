@@ -38,77 +38,133 @@ TEST_THIS_IS_NOT_A_SECRET_PASSPHRASE = "test"
 TEST_THIS_IS_NOT_A_SECRET_KEY_FINGERPRINT = "8D092FCC060BCC1E97CEC48987A177AAB2371E68"
 
 
-@skipIf(six.PY2, reason="Skipping tests for python 2.7, as PGP signing cannot be provided")
-@skipIf(not has_gpg(), reason='GPG not found on the system or python version is < 3.')
+@skipIf(
+    six.PY2, reason="Skipping tests for python 2.7, as PGP signing cannot be provided"
+)
+@skipIf(not has_gpg(), reason="GPG not found on the system or python version is < 3.")
 class TestCommandSign(BaseTestCase):
-
     def _import_test_key(self):
         with self.runner.isolated_filesystem() as d:
-            create_file('TESTKEY.asc', TEST_THIS_IS_NOT_A_SECRET_KEY__NO_REALLY_NOT)
-            self.runner.invoke(kecpkg, ['sign', '--import-key', 'TESTKEY.asc'])
+            create_file("TESTKEY.asc", TEST_THIS_IS_NOT_A_SECRET_KEY__NO_REALLY_NOT)
+            self.runner.invoke(kecpkg, ["sign", "--import-key", "TESTKEY.asc"])
 
     def tearDown(self):
         super(TestCommandSign, self).tearDown()
-        self.runner.invoke(kecpkg, ['sign', '--delete-key', TEST_THIS_IS_NOT_A_SECRET_KEY_FINGERPRINT])
+        self.runner.invoke(
+            kecpkg, ["sign", "--delete-key", TEST_THIS_IS_NOT_A_SECRET_KEY_FINGERPRINT]
+        )
 
     def test_sign_list_keys(self):
         self._import_test_key()
-        result = self.runner.invoke(kecpkg, ['sign', '--list'])
-        self.assertIn(result.exit_code, [0, 1], "Results of the run were: \n---\n{}\n---".format(result.output))
+        result = self.runner.invoke(kecpkg, ["sign", "--list"])
+        self.assertIn(
+            result.exit_code,
+            [0, 1],
+            "Results of the run were: \n---\n{}\n---".format(result.output),
+        )
 
     def test_import_key(self):
         with temp_chdir() as d:
-            create_file('TESTKEY.asc', TEST_THIS_IS_NOT_A_SECRET_KEY__NO_REALLY_NOT)
-            result = self.runner.invoke(kecpkg, ['sign', '--import-key', 'TESTKEY.asc'])
-            self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
+            create_file("TESTKEY.asc", TEST_THIS_IS_NOT_A_SECRET_KEY__NO_REALLY_NOT)
+            result = self.runner.invoke(kecpkg, ["sign", "--import-key", "TESTKEY.asc"])
+            self.assertEqual(
+                result.exit_code,
+                0,
+                "Results of the run were: \n---\n{}\n---".format(result.output),
+            )
 
             # teardown
-            result = self.runner.invoke(kecpkg, ['sign', '--delete-key', TEST_THIS_IS_NOT_A_SECRET_KEY_FINGERPRINT])
-            self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
+            result = self.runner.invoke(
+                kecpkg,
+                ["sign", "--delete-key", TEST_THIS_IS_NOT_A_SECRET_KEY_FINGERPRINT],
+            )
+            self.assertEqual(
+                result.exit_code,
+                0,
+                "Results of the run were: \n---\n{}\n---".format(result.output),
+            )
 
     def test_delete_key(self):
         self._import_test_key()
 
-        result = self.runner.invoke(kecpkg, ['sign', '--delete-key', TEST_THIS_IS_NOT_A_SECRET_KEY_FINGERPRINT])
-        self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
+        result = self.runner.invoke(
+            kecpkg, ["sign", "--delete-key", TEST_THIS_IS_NOT_A_SECRET_KEY_FINGERPRINT]
+        )
+        self.assertEqual(
+            result.exit_code,
+            0,
+            "Results of the run were: \n---\n{}\n---".format(result.output),
+        )
 
     def test_delete_key_wrong_fingerprint(self):
         self._import_test_key()
 
-        result = self.runner.invoke(kecpkg, ['sign', '--delete-key', 'THISISAWRONGFINGERPRINT'])
-        self.assertEqual(result.exit_code, 1, "Results of the run were: \n---\n{}\n---".format(result.output))
+        result = self.runner.invoke(
+            kecpkg, ["sign", "--delete-key", "THISISAWRONGFINGERPRINT"]
+        )
+        self.assertEqual(
+            result.exit_code,
+            1,
+            "Results of the run were: \n---\n{}\n---".format(result.output),
+        )
 
     def test_create_key(self):
-        result = self.runner.invoke(kecpkg, ['sign', '--create-key'],
-                                    input="Testing\n"
-                                          "KECPKG TESTING CREATE KEY\n"
-                                          "no-reply@ke-works.com\n"
-                                          "1\n"
-                                          "pass\n"
-                                          "pass\n")
-        self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
+        result = self.runner.invoke(
+            kecpkg,
+            ["sign", "--create-key"],
+            input="Testing\n"
+            "KECPKG TESTING CREATE KEY\n"
+            "no-reply@ke-works.com\n"
+            "1\n"
+            "pass\n"
+            "pass\n",
+        )
+        self.assertEqual(
+            result.exit_code,
+            0,
+            "Results of the run were: \n---\n{}\n---".format(result.output),
+        )
 
         keys = list_keys(get_gpg())
         last_key = keys[-1]
         fingerprint = last_key[-1]
 
-        result = self.runner.invoke(kecpkg, ['sign', '--delete-key', fingerprint])
-        self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
+        result = self.runner.invoke(kecpkg, ["sign", "--delete-key", fingerprint])
+        self.assertEqual(
+            result.exit_code,
+            0,
+            "Results of the run were: \n---\n{}\n---".format(result.output),
+        )
 
     def test_export_key(self):
         self._import_test_key()
 
         with self.runner.isolated_filesystem() as d:
-            result = self.runner.invoke(kecpkg, ['sign',
-                                                 '--export-key', 'out.asc',
-                                                 '--keyid', TEST_THIS_IS_NOT_A_SECRET_KEY_FINGERPRINT])
-            self.assertEqual(result.exit_code, 0, "Results of the run were: \n---\n{}\n---".format(result.output))
-            self.assertExists('out.asc')
+            result = self.runner.invoke(
+                kecpkg,
+                [
+                    "sign",
+                    "--export-key",
+                    "out.asc",
+                    "--keyid",
+                    TEST_THIS_IS_NOT_A_SECRET_KEY_FINGERPRINT,
+                ],
+            )
+            self.assertEqual(
+                result.exit_code,
+                0,
+                "Results of the run were: \n---\n{}\n---".format(result.output),
+            )
+            self.assertExists("out.asc")
 
 
-@skipIf(not has_gpg(), reason='GPG not found on the system or python version is < 3.')
+@skipIf(not has_gpg(), reason="GPG not found on the system or python version is < 3.")
 @skipIf(six.PY3, reason="These tests are for python 2 only.")
 class TestCommandSign27(BaseTestCase):
     def test_sign_capability_unavailable(self):
-        result = self.runner.invoke(kecpkg, ['sign', '--list'])
-        self.assertEqual(result.exit_code, 1, "Results of the run were: \n---\n{}\n---".format(result.output))
+        result = self.runner.invoke(kecpkg, ["sign", "--list"])
+        self.assertEqual(
+            result.exit_code,
+            1,
+            "Results of the run were: \n---\n{}\n---".format(result.output),
+        )

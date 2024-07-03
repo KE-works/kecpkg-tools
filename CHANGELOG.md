@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.0 (3JUL24)
+ * :shield: Maintenance release. Deprecation of python 2.7 and all python version upto and included 3.6 as these versions are out of support.
+
 ## 1.0.4 (26NOV19)
  * Maintenance release.
  * changed CI setup to use github actions. No end-user facing changes. #10
