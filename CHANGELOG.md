@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1 (4MAY26)
+ * :bug: Bugfix release. `kecpkg build` (and other commands relying on `get_package_dir`) used to crash with `TypeError: expected str, bytes or os.PathLike object, not NoneType` when invoked from a directory that did not contain a `.kecpkg_settings.json` or `package_info.json` marker file and no positional `package` argument was given. The failure path in `kecpkg.utils.get_package_dir()` was incorrectly gated on `package_name is not None`, causing it to return `None` silently. The function now fails loudly (or returns `None` only when `fail=False`, as documented) and the error message reports the actual searched path instead of `None`. Regression tests added under `tests/commands/test_build.py::TestBuildWithoutMarkerFile`.
+
 ## 1.1.0 (3JUL24)
  * :shield: Maintenance release. Deprecation of python 2.7 and all python version upto and included 3.6 as these versions are out of support.
 

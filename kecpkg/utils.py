@@ -131,10 +131,17 @@ def get_package_dir(package_name=None, fail=True):
         package_dir = _inner(os.path.join(os.getcwd(), package_name))
     if not package_dir and package_name is not None:
         package_dir = _inner(package_name)
-    if not package_dir and package_name is not None:
+    if not package_dir:
+        # The failure path used to be gated by ``package_name is not None``,
+        # which made the function return None silently when no package name was
+        # provided and no marker file was present in the cwd. Callers such as
+        # ``kecpkg build`` then crashed downstream on ``os.path.basename(None)``.
+        # The failure must fire whenever the package directory could not be
+        # located, regardless of whether ``package_name`` was given.
+        searched_path = package_name or os.getcwd()
         echo_failure(
             "This does not seem to be a package in path `{}` - please check that there is a "
-            "`package_info.json` or a `{}`".format(package_dir, SETTINGS_FILENAME)
+            "`package_info.json` or a `{}`".format(searched_path, SETTINGS_FILENAME)
         )
         if fail:
             sys.exit(1)
