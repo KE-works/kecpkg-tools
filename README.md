@@ -29,7 +29,7 @@ KE-chain python api.
 ### Installation with pip
 kecpkg-tools is distributed on [PyPI](https://pypi.org) as a universal
 wheel and is available on Linux/macOS and Windows and supports Python
-2.7/3.4+ and PyPy.
+3.10+ and PyPy.
 
 ```bash
 $ pip install --user --upgrade kecpkg-tools

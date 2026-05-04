@@ -1,5 +1,3 @@
-from io import open
-
 import os
 from setuptools import find_packages, setup
 
@@ -41,25 +39,23 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ),
+    python_requires=">=3.10",
     install_requires=(
         "click",
-        "atomicwrites",
         "jinja2",
         "pykechain>=3.0",
-        "appdirs",
+        "platformdirs",
         "tabulate",
         "python-gnupg",
     ),
-    tests_require=("coverage", "pytest", "flake8", "virtualenv"),
     packages=find_packages(exclude=["tests"]),
     # to include the templates in the bdist wheel, we need to add package_data here
     package_data={

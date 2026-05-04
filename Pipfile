@@ -12,9 +12,8 @@ pytest = "*"
 [packages]
 kecpkg-tools = {editable = true,file = "file:///Users/jochem/dev/kecpkg-tools"}
 click = "*"
-atomicwrites = "*"
 pykechain = ">=3.0.0"
-appdirs = "*"
+platformdirs = "*"
 python-gnupg = "*"
 tabulate = "*"
 toml = "*"

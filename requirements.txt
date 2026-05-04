@@ -1,9 +1,8 @@
 -e .
 click
-atomicwrites
 jinja2
 pykechain>=2.0.0
-appdirs
+platformdirs
 python-gnupg
 tabulate
 

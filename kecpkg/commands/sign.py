@@ -1,6 +1,5 @@
 import os
 import sys
-from pprint import pprint
 
 import click
 from pykechain.utils import temp_chdir
@@ -250,7 +249,6 @@ def sign(package=None, **options):
             "This might take a minute..."
         )
         result = gpg.gen_key(gpg.gen_key_input(**key_info))
-        pprint(result.__dict__)
         if result and result.stderr.find("KEY_CREATED"):
             echo_success("The key is succesfully created")
             _do_list(gpg=gpg)
@@ -363,7 +361,6 @@ def verify_signature(package_dir, artifacts_filename, artifacts_sig_filename):
         echo_info(f"Signed with: '{results.username}'")
     elif not results.valid:
         echo_failure("Signature of the package is invalid")
-        echo_failure(pprint(results.__dict__))
         sys.exit(1)
 
 

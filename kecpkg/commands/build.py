@@ -1,10 +1,9 @@
 import hashlib
 import os
 import sys
-from pprint import pprint
 from zipfile import ZipFile
 
-import click as click
+import click
 
 from kecpkg.commands.sign import verify_signature, verify_artifacts_hashes
 from kecpkg.commands.utils import CONTEXT_SETTINGS
@@ -226,8 +225,6 @@ def sign_package(package_dir, settings, options=None, verbose=False):
             detach=True,
             output=settings.get("artifacts_sig_filename", ARTIFACTS_SIG_FILENAME),
         )
-    pprint(results.__dict__)
-
     if results and results.status is not None:
         echo_info(f"Signed package contents: {results.status}")
     else:

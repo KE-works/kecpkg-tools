@@ -1,12 +1,12 @@
 import json
 import os
+import tempfile
 from collections import OrderedDict
 from copy import deepcopy
 
 import sys
 
-from appdirs import user_data_dir
-from atomicwrites import atomic_write
+from platformdirs import user_data_dir
 
 from kecpkg.utils import ensure_dir_exists, create_file, get_package_dir, echo_failure
 
@@ -21,7 +21,7 @@ GNUPG_KECPKG_HOME = os.path.join(user_data_dir("kecpkg", "KE-works BV"), ".gnupg
 DEFAULT_SETTINGS = OrderedDict(
     [
         ("version", "0.1.0"),
-        ("pyversions", ["3.9", "3.12"]),
+        ("pyversions", ["3.10", "3.11", "3.12", "3.13", "3.14"]),
         ("python_version", "3.12"),
         ("venv_dir", "venv"),
         ("entrypoint_script", "script"),
@@ -142,8 +142,11 @@ def save_settings(settings, package_dir=None, settings_filename=None):
     settings_filepath = get_settings_filepath(package_dir, settings_filename)
 
     ensure_dir_exists(os.path.dirname(settings_filepath))
-    with atomic_write(settings_filepath, overwrite=True) as f:
+    dir_path = os.path.dirname(os.path.abspath(settings_filepath))
+    with tempfile.NamedTemporaryFile("w", dir=dir_path, suffix=".tmp", delete=False) as f:
+        tmp_path = f.name
         f.write(json.dumps(settings, indent=4))
+    os.replace(tmp_path, settings_filepath)
 
 
 def restore_settings(package_dir=None, settings_filename=None):
@@ -159,6 +162,5 @@ def restore_settings(package_dir=None, settings_filename=None):
     create_file(settings_filepath)
     settings = copy_default_settings()
     if package_dir:
-        package_name = os.path.dirname(package_dir)
-        settings["package_name"] = package_name
-    save_settings(settings=settings, settings_filename=settings_filename)
+        settings["package_name"] = os.path.basename(package_dir)
+    save_settings(settings=settings, package_dir=package_dir, settings_filename=settings_filename)
