@@ -19,7 +19,7 @@ def ensure_dir_exists(d):
     """Ensure that directory exists, otherwise make directory.
 
     :param d: directory name
-    :type d: basestring
+    :type d: str
     :return: None
     """
     if not os.path.exists(d):
@@ -48,11 +48,10 @@ def create_file(filepath, content=None, overwrite=True):
 
     if not os.path.exists(filepath) or (os.path.exists(filepath) and overwrite):
         with open(filepath, "w") as fd:
-            # os.utime(filepath, times=None)
             if isinstance(content, list):
                 fd.writelines(content)
             else:
-                fd.write(content)
+                fd.write(content or "")
     else:
         echo_failure(f"File '{filepath}' already exists.")
         sys.exit(1)

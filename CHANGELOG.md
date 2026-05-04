@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.1 (4MAY26)
+ * :bug: Fix `create_file(content=None)` crashing with `TypeError: write() argument must be str, not None` (now writes an empty file as documented). Fixes a crash that could be triggered by `restore_settings`.
+ * :bug: Fix `restore_settings` storing the wrong value for `package_name` (used `dirname` instead of `basename`) and not passing `package_dir` to the inner `save_settings` call, which caused it to silently save to the wrong location.
+ * :bug: Remove live `pprint(results.__dict__)` debug calls that were left in `kecpkg build --sign` and `kecpkg sign --create-key`, leaking internal GPG objects to stdout on every run. Also fixed `echo_failure(pprint(...))` in `verify_signature` which always rendered as `None` on an invalid signature.
+ * :wrench: Replace abandoned `atomicwrites` library (archived 2022, last release 2021) with `tempfile.NamedTemporaryFile` + `os.replace()` from the stdlib; semantics are identical on Python 3.3+.
+ * :wrench: Replace unmaintained `appdirs` library (last release 2020) with its actively maintained fork `platformdirs` (API-compatible drop-in, used by pip/tox/black/etc.).
+ * :wrench: Replace deprecated `python setup.py develop/check/bdist_wheel` invocations in tox and CI with `pip install -e .` and `python -m build`, removing the last uses of the legacy `setup.py` command interface.
+ * :wrench: Remove `[bdist_wheel] universal = 1` from `setup.cfg` (Python 2 is gone) and the dead `[aliases]` section. Also remove `tests_require` from `setup.py` (ignored by modern pip) and the `from io import open` Python 2 shim.
+ * :white_check_mark: New test files: `tests/commands/test_config.py`, `tests/commands/test_prune.py`, `tests/test_utils.py`, `tests/test_settings.py`. Total test count: 64 passing (was 12). Coverage improved from 51% to 59% overall; key modules now at 95% (`settings`, `utils`), 93% (`prune`), 82% (`config`).
+
 ## 1.2.0 (4MAY26)
 
  * :bug: Bugfix release. `kecpkg build` (and other commands relying on `get_package_dir`) used to crash with `TypeError: expected str, bytes or os.PathLike object, not NoneType` when invoked from a directory that did not contain a `.kecpkg_settings.json` or `package_info.json` marker file and no positional `package` argument was given. The failure path in `kecpkg.utils.get_package_dir()` was incorrectly gated on `package_name is not None`, causing it to return `None` silently. The function now fails loudly (or returns `None` only when `fail=False`, as documented) and the error message reports the actual searched path instead of `None`. Regression tests added under `tests/commands/test_build.py::TestBuildWithoutMarkerFile`.

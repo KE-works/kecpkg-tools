@@ -5,6 +5,7 @@ from zipfile import ZipFile
 from click.testing import CliRunner
 
 from kecpkg.cli import kecpkg
+from kecpkg.commands.build import generate_artifact_hashes
 from kecpkg.settings import copy_default_settings, save_settings
 from kecpkg.utils import ensure_dir_exists, get_package_dir
 from tests.utils import BaseTestCase, temp_chdir, touch_file
@@ -206,3 +207,30 @@ class TestCommandPurge(BaseTestCase):
                 "the name of the pkg `{}` should be in the name of "
                 "the built kecpkg `{}`".format(pkgname, dist_dir_contents[0]),
             )
+
+    def test_build_with_no_update_package_info(self):
+        pkgname = "new_pkg"
+        with temp_chdir():
+            runner = CliRunner()
+            runner.invoke(kecpkg, ["new", pkgname, "--no-venv"])
+            package_dir = get_package_dir(pkgname)
+            os.chdir(package_dir)
+
+            result = runner.invoke(kecpkg, ["build", pkgname, "--no-update"])
+            self.assertEqual(
+                result.exit_code,
+                0,
+                "build --no-update failed:\n{}".format(result.output),
+            )
+            self.assertExists(os.path.join(package_dir, "dist"))
+
+
+class TestGenerateArtifactHashes(BaseTestCase):
+    def test_bad_algorithm_raises(self):
+        import tempfile as _tempfile
+
+        with _tempfile.TemporaryDirectory() as d:
+            settings = copy_default_settings()
+            settings["hash_algorithm"] = "not_a_real_algorithm"
+            with self.assertRaises(Exception):
+                generate_artifact_hashes(d, set(), settings)

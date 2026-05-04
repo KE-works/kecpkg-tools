@@ -1,5 +1,3 @@
-from io import open
-
 import os
 from setuptools import find_packages, setup
 
@@ -52,14 +50,12 @@ setup(
     python_requires=">=3.10",
     install_requires=(
         "click",
-        "atomicwrites",
         "jinja2",
         "pykechain>=3.0",
-        "appdirs",
+        "platformdirs",
         "tabulate",
         "python-gnupg",
     ),
-    tests_require=("coverage", "pytest", "flake8", "virtualenv"),
     packages=find_packages(exclude=["tests"]),
     # to include the templates in the bdist wheel, we need to add package_data here
     package_data={
