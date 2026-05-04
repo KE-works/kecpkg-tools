@@ -115,7 +115,7 @@ def config(package, **options):
         )
         settings["python_version"] = click.prompt(
             "Python version (choose from: {})".format(settings.get("pyversions")),
-            default="3.5",
+            default=settings.get("python_version", "3.12"),
         )
         settings["exclude_paths"] = click.prompt(
             "Exclude additional paths from kecpkg (eg. 'data, input')",

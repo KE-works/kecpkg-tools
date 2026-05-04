@@ -1,7 +1,10 @@
 # Changelog
 
-## 1.1.1 (4MAY26)
+## 1.2.0 (4MAY26)
+
  * :bug: Bugfix release. `kecpkg build` (and other commands relying on `get_package_dir`) used to crash with `TypeError: expected str, bytes or os.PathLike object, not NoneType` when invoked from a directory that did not contain a `.kecpkg_settings.json` or `package_info.json` marker file and no positional `package` argument was given. The failure path in `kecpkg.utils.get_package_dir()` was incorrectly gated on `package_name is not None`, causing it to return `None` silently. The function now fails loudly (or returns `None` only when `fail=False`, as documented) and the error message reports the actual searched path instead of `None`. Regression tests added under `tests/commands/test_build.py::TestBuildWithoutMarkerFile`.
+
+ * :shield: Maintenance release. Deprecated support for Python 3.7, 3.8 and 3.9, which have all reached upstream end-of-life (EOL June 2023, October 2024 and October 2025 respectively) and no longer receive security updates from python.org. Added official support and CI coverage for Python 3.13 and Python 3.14 (current latest stable, 3.14.4). The supported Python version range is now 3.10 – 3.14 (matching python.org's actively supported branches as of May 2026). The primary CI / publish / docs/coverage version was bumped from 3.12 to 3.14, and the GitHub Actions `actions/checkout` and `actions/setup-python` were upgraded from `@v1` to `@v4` / `@v5` (required for 3.13/3.14 runtimes to install). `setup.py` now declares `python_requires=">=3.10"` so pip will refuse to install on deprecated interpreters. The built-in `pyversions` prompt list and the `new` / `config` command defaults were also refreshed (previous default of `3.5` was long obsolete).
 
 ## 1.1.0 (3JUL24)
  * :shield: Maintenance release. Deprecation of python 2.7 and all python version upto and included 3.6 as these versions are out of support.
@@ -17,14 +20,14 @@
  * fixed compatibility issue with GPG installation on windows. Now we do find the correct gpg.exe on your windows harddisk if you installed it through https://gpg4win.org/index.html.
 
 ## 1.0.1 (31MAY19)
-Today we release Version 1.0 of the kecpkg-tools as in the past year no updates were deemed necessary. It is heavily used internally by KE-works BV and at customers to manage ke-chain script packages (KECPKG's). The major additional features of this release are the package signing ability (Python 3 only). 
+Today we release Version 1.0 of the kecpkg-tools as in the past year no updates were deemed necessary. It is heavily used internally by KE-works BV and at customers to manage ke-chain script packages (KECPKG's). The major additional features of this release are the package signing ability (Python 3 only).
 
  * Added the ability to manage signatures and keys. We built a Publik Key Infrastructure to sign packages and have the ability to trust packages signed with a developer key. The process of creating and submitting a key to be included in the trusted keyring of KE-chain will be on our [support portal](https://support.ke-chain.com) later when it is all available in KE-chain production. Please check out the documentation of the commandline interface using `kecpkg sign --help` for further information.
  * The build process is does now provide a list of artifacts (ARTIFACTS) that are included in a kecpkg. The list of artifacts consist out of the (relative pathname), the hash of the file (normally sha256) and the filesize. KE-chain is able to check the contents of the kecpkgs after upload against this file and will determine of the kecpkgs is untempered on disk.
  * The build process also now provides an optional `kecpkg build --sign` command flag to include a signature inside the keckpg. When package signing is enabled using the `--sign` flag, the list of artifacts (ARTIFACTS file) is signed with the cryptographic signature of the developer (ARTIFACTS.SIG). This signature can be checked by KE-chain after upload when the public key of the developer is known and trusted by KE-chain. This might enable running the contained scripts on higher than scope manager permissions.
  * Adding dependent permissions on GPG on linux or windows in order to enable the package signing features.
  * Added dependent packages `tabulate`, `appdirs` and `python-gnupg`.
- 
+
 ## 1.0.0 (28MAY19)
 Retracted release
 
@@ -51,16 +54,16 @@ Retracted release
  * the `upload` command is fully functional and can even replace uploaded packages. It will guide you through the setup process.
  * added command `config` to check the configuration
  * the `build` command ignores more files and prevents those from being packaged.
-  
+
 ## 0.5.1 (4DEC17)
  * bugfix release
-  
+
 ## 0.5.0 (4DEC17)
  * removed shutil for py2.7 compatibility
  * improved upload handling
  * added build and upload runners on the tests
  * updated the `create` command to include the creation of the virtualenv
-  
+
 ## 0.3.0 (1NOV17)
 
 Third prerelease.
